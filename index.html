@@ -609,6 +609,20 @@ async function createSession(){
       if(p)conn.send({type:'welcome',topic,host:name});
     });
     conn.on('data',d=>{
+      if(d.type==='hello'){
+        // ضيف جديد اتصل — أضفه للقائمة
+        const gName=d.name||'ضيف';
+        const gListen=d.listen||false;
+        addParticipant(gId,gName,gListen);
+        playSound('join');
+        toast(gName+(gListen?' دخل مستمعاً 👂':' انضم 🎙️'));
+        conn.send({type:'welcome',topic,host:name});
+        // لو مستمع — ابعث له الصوت
+        if(gListen&&stream){
+          const lCall=peer.call(conn.peer,stream);
+          calls[gId]=lCall;
+        }
+      }
       if(d.type==='raise'&&participants[gId]){
         if(d.value){raiseQueue.push({id:gId,name:participants[gId].name})}
         else{raiseQueue=raiseQueue.filter(x=>x.id!==gId)}
@@ -638,15 +652,10 @@ async function joinSession(){
   peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
   peer.on('open',()=>{
     const pid='mwj'+code;
-    if(!listenOnly){
-      const call=peer.call(pid,stream,{metadata:{name,listen:false}});
-      setupGuestCall(call,code,name,false);
-    } else {
-      const fakeStream=new MediaStream();
-      const call=peer.call(pid,fakeStream,{metadata:{name,listen:true}});
-      setupGuestCall(call,code,name,true);
-    }
-    hostConn=peer.connect(pid);
+    hostConn=peer.connect(pid,{metadata:{name,listen:listenOnly}});
+    hostConn.on('open',()=>{
+      hostConn.send({type:'hello',name,listen:listenOnly});
+    });
     hostConn.on('data',d=>{
       if(d.type==='welcome'){
         $('w-title').textContent='أهلاً '+(name||'بك')+' في الجلسة';
@@ -663,28 +672,47 @@ async function joinSession(){
       if(d.type==='allowed'){playSound('allowed');toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on')}
       if(d.type==='kick'){toast('تم طردك من الجلسة');setTimeout(()=>{leaveSession()},1000)}
     });
+    hostConn.on('close',()=>{showRating()});
+    hostConn.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
+
+    if(!listenOnly){
+      // متحدث — يرسل صوت ويستقبل
+      const call=peer.call(pid,stream,{metadata:{name,listen:false}});
+      call.on('stream',rs=>{
+        $('ra').srcObject=rs;
+        showGuestScreen(code,name,false);
+      });
+      call.on('close',()=>showRating());
+      call.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
+    } else {
+      // مستمع — يستقبل عبر call بدون إرسال
+      // المضيف يتصل به عند استقبال hello
+      showGuestScreen(code,name,true);
+      toast('دخلت كمستمع 👂');
+    }
   });
   peer.on('error',e=>{
     const msg=e.type==='peer-unavailable'?'الجلسة غير موجودة أو انتهت':'خطأ: '+e.type;
     loading('تعذر الاتصال',msg);setTimeout(()=>go('join'),2500);
   });
+  // المضيف يتصل بالمستمع ليبث له الصوت
+  peer.on('call',call=>{
+    call.answer();
+    call.on('stream',rs=>{$('ra').srcObject=rs});
+  });
 }
 
-function setupGuestCall(call,code,name,listen){
-  call.on('stream',rs=>{
-    $('ra').srcObject=rs;
-    $('gt').textContent='جلسة مباشرة';
-    $('gm').textContent='كود: '+code;
-    $('gspkav').textContent=name[0].toUpperCase();
-    $('gspkname').textContent=listen?'أنت مستمع 👂':'متصل بالجلسة ✓';
-    $('gplist').innerHTML=`
-      <div class="pitem"><div class="pav host">م</div><div style="flex:1"><div class="pname">المضيف</div><div class="pbadge">يتحدث</div></div></div>
-      <div class="pitem"><div class="pav ${listen?'listen':'guest'}">${name[0].toUpperCase()}</div><div style="flex:1"><div class="pname">${name}</div><div class="pbadge">${listen?'👂 مستمع':'🎙️ متحدث'}</div></div></div>`;
-    if(listen){$('gctrls').style.display='none';$('lctrls').style.display='flex'}
-    go('guest');toast('دخلت الجلسة ✓');
-  });
-  call.on('close',()=>{showRating()});
-  call.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
+function showGuestScreen(code,name,listen){
+  $('gt').textContent='جلسة مباشرة';
+  $('gm').textContent='كود: '+code;
+  $('gspkav').textContent=name[0].toUpperCase();
+  $('gspkname').textContent=listen?'أنت مستمع 👂':'متصل بالجلسة ✓';
+  $('gplist').innerHTML=`
+    <div class="pitem"><div class="pav host">م</div><div style="flex:1"><div class="pname">المضيف</div><div class="pbadge">يتحدث</div></div></div>
+    <div class="pitem"><div class="pav ${listen?'listen':'guest'}">${name[0].toUpperCase()}</div><div style="flex:1"><div class="pname">${name}</div><div class="pbadge">${listen?'👂 مستمع':'🎙️ متحدث'}</div></div></div>`;
+  if(listen){$('gctrls').style.display='none';$('lctrls').style.display='flex'}
+  else{$('gctrls').style.display='flex';$('lctrls').style.display='none'}
+  go('guest');
 }
 
 function closeWelcome(){$('welcome').style.display='none'}
