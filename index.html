@@ -4,444 +4,517 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>موجة — جلسات صوتية مؤقتة</title>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1D9E75;--tl:#E1F5EE;--td:#0F6E56;--tm:#5DCAA5;
+  --amber:#EF9F27;--al:#FAEEDA;--ad:#854F0B;
+  --red:#E24B4A;--rl:#FCEBEB;
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#f0efe9;
+  --tx:#1a1a18;--tx2:#6b6b68;--tx3:#9b9b98;
+  --bo:rgba(0,0,0,.1);--bo2:rgba(0,0,0,.18);
+  --r:12px;--rs:8px
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+  --tx:#f0efe9;--tx2:#a0a09d;--tx3:#6b6b68;
+  --bo:rgba(255,255,255,.1);--bo2:rgba(255,255,255,.18);
+  --tl:#0a3d2e;--al:#3a2a08;--rl:#3a1010
+}}
+body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.wrap{width:100%;max-width:480px;padding:1.5rem 1rem 5rem}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+.logo-icon{width:38px;height:38px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center}
+.lw{display:flex;gap:2.5px;align-items:center}
+.lw span{display:block;background:#fff;border-radius:2px;width:3px;animation:lw 1.4s ease-in-out infinite}
+.lw span:nth-child(1){height:7px;animation-delay:0s}.lw span:nth-child(2){height:13px;animation-delay:.12s}
+.lw span:nth-child(3){height:18px;animation-delay:.24s}.lw span:nth-child(4){height:13px;animation-delay:.36s}
+.lw span:nth-child(5){height:7px;animation-delay:.48s}
+.logo-name{font-size:22px;font-weight:600}.logo-name span{color:var(--teal)}
+.logo-tag{font-size:11px;color:var(--tx3);margin-right:auto}
+.screen{display:none}.screen.active{display:block}
 
-  :root {
-    --teal: #1D9E75;
-    --teal-light: #E1F5EE;
-    --teal-dark: #0F6E56;
-    --teal-mid: #5DCAA5;
-    --amber: #EF9F27;
-    --amber-light: #FAEEDA;
-    --red: #E24B4A;
-    --red-light: #FCEBEB;
-    --bg: #ffffff;
-    --bg2: #f7f7f5;
-    --bg3: #f0efe9;
-    --text: #1a1a18;
-    --text2: #6b6b68;
-    --text3: #9b9b98;
-    --border: rgba(0,0,0,0.1);
-    --border2: rgba(0,0,0,0.18);
-    --radius: 12px;
-    --radius-sm: 8px;
-  }
+/* ===== HOME v3.4 ===== */
+.hero-v2{padding:1.6rem 0 1.4rem;animation:fadeUp .5s ease both}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--tl);color:var(--td);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;border:.5px solid var(--tm);margin-bottom:1rem;letter-spacing:.04em}
+.hero-h{font-size:28px;font-weight:700;line-height:1.3;margin-bottom:.6rem;letter-spacing:-.3px}
+.hero-accent{color:var(--teal)}
+.hero-sub{font-size:14px;color:var(--tx2);line-height:1.65;max-width:340px}
+.stats-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1.1rem 1rem;margin-bottom:1.4rem;animation:fadeUp .5s .08s ease both;opacity:0}
+.stat-item{flex:1;text-align:center}
+.stat-num{font-size:22px;font-weight:700;color:var(--teal);font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1}
+.stat-label{font-size:11px;color:var(--tx3);margin-top:4px}
+.stat-div{width:1px;height:36px;background:var(--bo2)}
+.acards{display:flex;flex-direction:column;gap:12px;margin-bottom:1.4rem}
+.acard{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1.2rem 1rem 1.2rem 1.25rem;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .15s;animation:fadeUp .5s .14s ease both;opacity:0}
+.acard:last-child{animation-delay:.2s}
+.acard:hover{border-color:var(--tm);background:var(--tl)}
+.acard-text{flex:1}
+.acard-arrow{font-size:18px;color:var(--tx3);transition:transform .15s;line-height:1}
+.acard:hover .acard-arrow{transform:translateX(-4px);color:var(--teal)}
+.aicon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.aicon.b{background:var(--tl)}.aicon.j{background:var(--al)}
+.acard h3{font-size:15px;font-weight:500;margin-bottom:3px}
+.acard p{font-size:12px;color:var(--tx2)}
+.features-strip{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 1.5rem;flex-wrap:wrap;animation:fadeUp .5s .26s ease both;opacity:0}
+.feat-item{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--tx2)}
+.feat-ic{font-size:13px}
+.feat-sep{color:var(--tx3);font-size:14px}
+.reviews-section{margin-bottom:1.5rem;animation:fadeUp .5s .32s ease both;opacity:0}
+.reviews-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.reviews-title{font-size:13px;font-weight:600;color:var(--tx2)}
+.reviews-rating{font-size:12px;color:var(--tx2)}
+.reviews-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.reviews-scroll::-webkit-scrollbar{display:none}
+.review-card{min-width:230px;max-width:230px;background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1rem;flex-shrink:0}
+.review-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.review-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0}
+.review-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.review-stars{font-size:11px;color:var(--amber);letter-spacing:1px}
+.review-text{font-size:12px;color:var(--tx2);line-height:1.6}
+.home-footer{text-align:center;font-size:11px;color:var(--tx3);padding:1rem 0 .5rem;animation:fadeUp .5s .38s ease both;opacity:0}
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a; --bg2: #252523; --bg3: #2e2e2b;
-      --text: #f0efe9; --text2: #a0a09d; --text3: #6b6b68;
-      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.18);
-      --teal-light: #0a3d2e; --amber-light: #3a2a08; --red-light: #3a1010;
-    }
-  }
+/* ===== CREATE / JOIN ===== */
+.fl{font-size:11px;color:var(--tx3);letter-spacing:.06em;margin-bottom:8px}
+.fld{margin-bottom:12px}
+.fld label{font-size:12px;color:var(--tx2);display:block;margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;padding:10px 14px;font-size:14px;border:.5px solid var(--bo2);border-radius:var(--rs);background:var(--bg2);color:var(--tx);font-family:inherit;transition:border-color .15s}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--teal)}
+.fld textarea{resize:none;height:70px}
+.frow{display:flex;gap:10px}.frow .fld{flex:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:6px 14px;border-radius:20px;font-size:12px;border:.5px solid var(--bo2);background:var(--bg2);color:var(--tx2);cursor:pointer;transition:all .15s}
+.chip.on{background:var(--tl);color:var(--td);border-color:var(--tm)}
 
-  body {
-    font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-  }
+/* Permission toggle */
+.perm-toggle{display:flex;gap:8px;margin-bottom:4px}
+.perm-opt{flex:1;padding:10px 8px;border-radius:var(--rs);border:1.5px solid var(--bo2);background:var(--bg2);cursor:pointer;text-align:center;font-family:inherit;font-size:12px;color:var(--tx2);transition:all .15s}
+.perm-opt.on{border-color:var(--teal);background:var(--tl);color:var(--td);font-weight:600}
+.perm-opt .pi{font-size:18px;display:block;margin-bottom:3px}
 
-  .container { width: 100%; max-width: 480px; padding: 1.5rem 1rem 4rem; }
+/* Size chips */
+.size-chips{display:flex;gap:8px;margin-bottom:4px}
+.size-chip{flex:1;padding:8px;border-radius:var(--rs);border:1.5px solid var(--bo2);background:var(--bg2);cursor:pointer;text-align:center;font-family:inherit;font-size:13px;font-weight:600;color:var(--tx2);transition:all .15s}
+.size-chip.on{border-color:var(--teal);background:var(--tl);color:var(--td)}
 
-  /* Logo */
-  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
-  .logo-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--teal); display: flex; align-items: center; justify-content: center; }
-  .logo-waves { display: flex; gap: 2.5px; align-items: center; }
-  .logo-waves span { display: block; background: white; border-radius: 2px; width: 3px; animation: logowave 1.4s ease-in-out infinite; }
-  .logo-waves span:nth-child(1) { height: 7px; animation-delay: 0s; }
-  .logo-waves span:nth-child(2) { height: 13px; animation-delay: 0.12s; }
-  .logo-waves span:nth-child(3) { height: 18px; animation-delay: 0.24s; }
-  .logo-waves span:nth-child(4) { height: 13px; animation-delay: 0.36s; }
-  .logo-waves span:nth-child(5) { height: 7px; animation-delay: 0.48s; }
-  @keyframes logowave { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.7)} }
-  .logo-text { font-size: 1.4rem; font-weight: 700; color: var(--teal); letter-spacing: -0.5px; }
-  .version-tag { font-size: 0.65rem; color: var(--text3); background: var(--bg3); border-radius: 4px; padding: 1px 5px; margin-right: 6px; }
+.btn{width:100%;padding:12px;border-radius:var(--rs);border:none;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:8px}
+.btn-p{background:var(--teal);color:#fff}.btn-p:hover{background:var(--td)}
+.btn-g{background:var(--bg2);color:var(--tx);border:.5px solid var(--bo2)}.btn-g:hover{background:var(--bg3)}
 
-  /* Screens */
-  .screen { display: none; }
-  .screen.active { display: block; }
+/* Loading */
+.lbox{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:2.5rem;text-align:center}
+.spin{width:40px;height:40px;border:3px solid var(--tl);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.2rem}
+.ltitle{font-size:16px;font-weight:500;margin-bottom:6px}
+.lsub{font-size:13px;color:var(--tx2)}
+.lerr{color:var(--red);margin-top:10px;font-size:13px}
 
-  /* Card */
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
-  .card-title { font-size: 0.75rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+/* Join */
+.jbox{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem}
+.jbox p{font-size:13px;color:var(--tx2);margin-bottom:12px;text-align:center}
+.codeinput{width:100%;padding:14px;font-size:24px;font-weight:700;letter-spacing:8px;text-align:center;border:.5px solid var(--bo2);border-radius:var(--rs);background:var(--bg);color:var(--tx);font-family:monospace;margin-bottom:10px}
+.codeinput:focus{outline:none;border-color:var(--teal)}
 
-  /* Inputs */
-  .input-group { margin-bottom: 0.85rem; }
-  .input-group label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.4rem; font-weight: 500; }
-  input[type=text], input[type=number], textarea, select {
-    width: 100%; padding: 0.65rem 0.85rem; border: 1.5px solid var(--border2);
-    border-radius: var(--radius-sm); background: var(--bg); color: var(--text);
-    font-size: 1rem; font-family: inherit; outline: none; transition: border-color .2s;
-  }
-  input:focus, textarea:focus, select:focus { border-color: var(--teal); }
+/* Mode select overlay */
+.welcome{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem}
+.welcome-card{background:var(--bg);border-radius:var(--r);padding:2rem;max-width:360px;width:100%;text-align:center}
+.welcome-icon{font-size:40px;margin-bottom:1rem}
+.welcome h2{font-size:20px;font-weight:600;margin-bottom:.5rem}
+.welcome p{font-size:14px;color:var(--tx2);line-height:1.6;margin-bottom:.5rem}
+.welcome-topic{background:var(--tl);color:var(--td);padding:10px 14px;border-radius:var(--rs);font-size:14px;font-weight:500;margin:1rem 0}
+.welcome-rules{text-align:right;font-size:13px;color:var(--tx2);margin-bottom:1.5rem;line-height:2}
+.welcome-flag{font-size:2rem;margin-bottom:4px}
+.welcome-seq{display:inline-block;font-size:12px;background:var(--tl);color:var(--td);border-radius:6px;padding:4px 12px;margin-bottom:8px}
 
-  /* Buttons */
-  .btn { display: block; width: 100%; padding: 0.8rem 1rem; border-radius: var(--radius-sm); border: none; font-size: 1rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity .15s, transform .1s; text-align: center; }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary { background: var(--teal); color: white; }
-  .btn-secondary { background: var(--bg3); color: var(--text); border: 1.5px solid var(--border2); }
-  .btn-danger { background: var(--red-light); color: var(--red); border: 1px solid var(--red); }
-  .btn-amber { background: var(--amber-light); color: #7a5000; border: 1px solid var(--amber); }
-  .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; width: auto; display: inline-block; }
-  .btn + .btn { margin-top: 0.5rem; }
-  .btn:disabled { opacity: 0.4; cursor: default; }
+/* Session */
+.sh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem}
+.stitle{font-size:18px;font-weight:600;line-height:1.3}
+.smeta{font-size:12px;color:var(--tx2);margin-top:4px}
+.lpill{display:flex;align-items:center;gap:5px;background:var(--tl);padding:4px 10px;border-radius:20px;flex-shrink:0}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite}
+.lpill span{font-size:11px;color:var(--td);font-weight:500}
 
-  /* Room header */
-  .room-header { background: var(--teal); color: white; border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-  .room-topic { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
-  .room-meta { font-size: 0.8rem; opacity: 0.85; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
-  .room-code-badge { background: rgba(255,255,255,0.2); border-radius: 6px; padding: 2px 8px; font-weight: 700; font-size: 0.9rem; letter-spacing: 1px; }
+/* Speaker card */
+.spkcard{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem;text-align:center}
+.spkav{width:52px;height:52px;border-radius:50%;background:var(--tl);color:var(--td);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;margin:0 auto 8px;border:2px solid var(--teal)}
+.spkname{font-size:14px;font-weight:500;margin-bottom:10px}
+.wbars{display:flex;align-items:center;justify-content:center;gap:3px;height:36px}
+.wb{width:4px;border-radius:2px;background:var(--teal);height:6px}
+.wbars.on .wb{animation:wb 1.1s ease-in-out infinite}
+.wb:nth-child(1){animation-delay:0s}.wb:nth-child(2){animation-delay:.1s}.wb:nth-child(3){animation-delay:.2s}
+.wb:nth-child(4){animation-delay:.3s}.wb:nth-child(5){animation-delay:.4s}.wb:nth-child(6){animation-delay:.3s}
+.wb:nth-child(7){animation-delay:.2s}.wb:nth-child(8){animation-delay:.1s}.wb:nth-child(9){animation-delay:0s}
 
-  /* Timer */
-  .timer-bar { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
-  .timer-bar .t-label { color: var(--text2); font-size: 0.78rem; }
-  .timer-bar .t-time { font-weight: 700; font-size: 1.05rem; color: var(--teal); flex: 1; }
-  .timer-bar.warn .t-time { color: var(--red); animation: pulse-red 1s ease-in-out infinite; }
-  @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.5} }
+/* Code box */
+.codebox{background:var(--tl);border:.5px solid var(--tm);border-radius:var(--rs);padding:12px 14px;margin-bottom:1rem}
+.codebox p{font-size:12px;color:var(--td);margin-bottom:8px}
+.bigcode{font-size:28px;font-weight:700;letter-spacing:6px;color:var(--td);font-family:monospace;text-align:center;margin-bottom:8px}
+.srow{display:flex;gap:6px;align-items:center}
+.slink{flex:1;font-size:11px;color:var(--td);background:#fff;padding:7px 10px;border-radius:var(--rs);border:.5px solid var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:monospace;direction:ltr}
+.cbtn{padding:7px 12px;background:var(--teal);color:#fff;border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.wabtn{padding:7px 12px;background:#25D366;color:#fff;border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
 
-  /* Participants */
-  .participants-list { display: flex; flex-direction: column; gap: 0.5rem; }
-  .participant-row {
-    display: flex; align-items: center; gap: 0.6rem;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 0.55rem 0.75rem;
-    transition: background .2s;
-  }
-  .participant-row.speaking { background: var(--teal-light); border-color: var(--teal-mid); }
-  .p-avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: var(--teal); color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
-  }
-  .p-avatar.host { background: var(--amber); }
-  .p-info { flex: 1; min-width: 0; }
-  .p-name-row { display: flex; align-items: center; gap: 0.3rem; }
-  .p-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .p-flag { font-size: 1rem; }
-  .p-seq { font-size: 0.72rem; color: var(--text3); background: var(--bg3); border-radius: 4px; padding: 1px 5px; }
-  .p-role { font-size: 0.72rem; color: var(--text3); }
-  .p-actions { display: flex; gap: 0.35rem; }
-  .p-mic-icon { font-size: 1rem; }
-  .p-pending-badge { font-size: 0.7rem; background: var(--amber-light); color: #7a5000; border: 1px solid var(--amber); border-radius: 4px; padding: 1px 5px; }
+/* Permission banner */
+.perm-banner{background:var(--al);border:.5px solid var(--amber);border-radius:var(--rs);padding:10px 14px;margin-bottom:1rem;display:none}
+.perm-banner.show{display:block}
+.perm-banner-title{font-size:13px;font-weight:600;color:var(--ad);margin-bottom:8px}
+.perm-banner-btns{display:flex;gap:6px}
+.pbtn-yes{padding:7px 14px;background:var(--teal);color:#fff;border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit}
+.pbtn-no{padding:7px 14px;background:var(--rl);color:var(--red);border:1px solid var(--red);border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit}
 
-  /* Host controls */
-  .host-controls { display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; }
+/* Queue */
+.qbox{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--rs);padding:10px 14px;margin-bottom:1rem}
+.qlabel{font-size:12px;color:var(--tx3);margin-bottom:8px}
+.qlist{display:flex;flex-direction:column;gap:6px}
+.qitem{display:flex;align-items:center;gap:8px;font-size:13px}
+.qnum{width:20px;height:20px;border-radius:50%;background:var(--tl);color:var(--td);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qname{flex:1}
+.qseq{font-size:10px;color:var(--tx3);background:var(--bg3);border-radius:3px;padding:1px 4px;margin-right:3px}
+.qallow{padding:4px 10px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+.qdeny{padding:4px 10px;background:var(--rl);color:var(--red);border:1px solid var(--red);border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
 
-  /* Permission mode toggle */
-  .perm-mode-toggle { display: flex; gap: 0.5rem; margin-bottom: 0.85rem; }
-  .perm-opt {
-    flex: 1; padding: 0.65rem 0.5rem; border: 2px solid var(--border2);
-    border-radius: var(--radius-sm); background: var(--bg); cursor: pointer;
-    text-align: center; transition: all .2s; font-size: 0.82rem; font-family: inherit;
-  }
-  .perm-opt.selected { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); font-weight: 600; }
-  .perm-opt .perm-icon { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+/* Participants */
+.plabel{font-size:12px;color:var(--tx3);margin-bottom:8px}
+.plist{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.pitem{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--rs)}
+.pav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.pav.host{background:var(--tl);color:var(--td);border:2px solid var(--teal)}
+.pav.guest{background:var(--bg3);color:var(--tx2)}
+.pav.listen{background:var(--al);color:var(--ad)}
+.pinfo{flex:1;min-width:0}
+.pname{font-size:14px;font-weight:500;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pflag{font-size:13px}
+.pseq{font-size:10px;background:var(--bg3);color:var(--tx3);border-radius:3px;padding:1px 5px}
+.pbadge{font-size:10px;color:var(--tx3);margin-top:2px}
+.hbtns{display:flex;gap:5px;flex-shrink:0}
+.hbtn{padding:5px 10px;border-radius:6px;border:none;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500}
+.hbtn.mute{background:var(--al);color:var(--ad)}
+.hbtn.kick{background:var(--rl);color:var(--red)}
+.hbtn.perm{background:var(--tl);color:var(--td)}
 
-  /* Room size selector */
-  .room-size-opts { display: flex; gap: 0.5rem; margin-bottom: 0.85rem; }
-  .room-size-opt {
-    flex: 1; padding: 0.55rem; border: 2px solid var(--border2);
-    border-radius: var(--radius-sm); background: var(--bg); cursor: pointer;
-    text-align: center; font-size: 0.85rem; font-family: inherit; font-weight: 600;
-    transition: all .2s;
-  }
-  .room-size-opt.selected { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
+/* Waiting perm */
+.waiting-perm{background:var(--al);border-radius:var(--rs);padding:1.2rem;text-align:center;margin-bottom:1rem}
+.waiting-spin{width:28px;height:28px;border:3px solid rgba(239,159,39,.3);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
 
-  /* Queue list */
-  .queue-item { display: flex; align-items: center; gap: 0.5rem; background: var(--amber-light); border: 1px solid var(--amber); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; margin-bottom: 0.4rem; }
-  .queue-item .q-name { flex: 1; font-size: 0.88rem; font-weight: 600; }
-  .queue-num { font-size: 0.72rem; color: var(--text2); background: white; border-radius: 4px; padding: 1px 5px; }
+/* Timer */
+.timerbox{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--rs);padding:10px 14px;margin-bottom:1rem}
+.timerlabel{font-size:12px;color:var(--tx2)}
+.timerclock{font-size:18px;font-weight:600;color:var(--teal);font-family:monospace}
+.timerclock.warn{color:var(--red)}
 
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(30px);
-    background: #222; color: #fff; padding: 0.65rem 1.2rem; border-radius: 50px;
-    font-size: 0.9rem; white-space: nowrap; opacity: 0; pointer-events: none;
-    transition: all .3s; z-index: 999;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* Controls */
+.ctrls{display:flex;gap:8px;margin-top:12px}
+.ctrl{flex:1;padding:10px;border-radius:var(--rs);border:.5px solid var(--bo2);background:var(--bg2);font-size:13px;color:var(--tx);cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
+.ctrl:hover{background:var(--bg3)}
+.ctrl.muted{background:var(--al);color:var(--ad);border-color:rgba(239,159,39,.4)}
+.ctrl.raise-on{background:var(--tl);color:var(--td);border-color:var(--tm)}
+.ctrl.leave{background:var(--rl);color:var(--red);border-color:rgba(226,75,74,.3)}
+.ctrl.listen-mode{background:var(--al);color:var(--ad)}
 
-  /* Overlay */
-  .overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-    z-index: 500; align-items: center; justify-content: center; padding: 1rem;
-  }
-  .overlay.open { display: flex; }
-  .overlay-box { background: var(--bg); border-radius: var(--radius); padding: 1.5rem; max-width: 380px; width: 100%; }
-  .overlay-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
-  .overlay-body { font-size: 0.9rem; color: var(--text2); line-height: 1.6; margin-bottom: 1rem; }
+/* Rating */
+.rating-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem}
+.rating-card{background:var(--bg);border-radius:var(--r);padding:2rem;max-width:360px;width:100%;text-align:center}
+.rating-card h2{font-size:20px;font-weight:600;margin-bottom:.5rem}
+.rating-card p{font-size:14px;color:var(--tx2);margin-bottom:1.5rem}
+.stars{display:flex;justify-content:center;gap:10px;margin-bottom:1.5rem}
+.star{font-size:36px;cursor:pointer;transition:transform .1s;filter:grayscale(1)}
+.star.on{filter:grayscale(0)}
+.star:hover{transform:scale(1.2)}
+.rating-msg{font-size:13px;color:var(--tx2);margin-bottom:1rem;min-height:20px}
 
-  /* Permission request notification */
-  .perm-req-banner {
-    background: var(--amber-light); border: 1.5px solid var(--amber);
-    border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 0.75rem;
-    display: none;
-  }
-  .perm-req-banner.show { display: block; }
-  .perm-req-banner .perm-req-text { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.5rem; }
-  .perm-req-banner .perm-req-actions { display: flex; gap: 0.4rem; }
+/* Warn banner */
+.warnbanner{background:var(--rl);border:.5px solid rgba(226,75,74,.3);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);text-align:center;margin-bottom:1rem;display:none}
+.warnbanner.show{display:block}
 
-  /* Waiting for permission */
-  .waiting-perm { text-align: center; padding: 1rem; color: var(--text2); font-size: 0.9rem; }
-  .waiting-perm .spin { font-size: 1.5rem; animation: spin 2s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;transition:transform .3s;white-space:nowrap;z-index:300}
+.toast.show{transform:translateX(-50%) translateY(0)}
 
-  /* Rating */
-  .stars { display: flex; gap: 0.5rem; justify-content: center; font-size: 2rem; margin: 0.75rem 0; }
-  .star { cursor: pointer; opacity: 0.35; transition: all .15s; }
-  .star.on { opacity: 1; }
-  .rating-msg { text-align: center; font-size: 0.9rem; color: var(--text2); min-height: 1.4em; }
-
-  /* Share */
-  .share-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-  .share-row input { flex: 1; font-size: 0.85rem; }
-  .share-row .btn { width: auto; flex-shrink: 0; }
-
-  /* Mode select screen */
-  .mode-cards { display: flex; gap: 0.75rem; margin-top: 1rem; }
-  .mode-card {
-    flex: 1; border: 2px solid var(--border2); border-radius: var(--radius);
-    padding: 1rem 0.75rem; text-align: center; cursor: pointer;
-    transition: all .2s; background: var(--bg2);
-  }
-  .mode-card:hover { border-color: var(--teal); background: var(--teal-light); }
-  .mode-card .mode-icon { font-size: 2rem; display: block; margin-bottom: 0.4rem; }
-  .mode-card .mode-label { font-size: 0.9rem; font-weight: 700; color: var(--text); }
-  .mode-card .mode-desc { font-size: 0.75rem; color: var(--text2); margin-top: 0.25rem; }
-
-  /* Welcome overlay */
-  #welcomeOverlay .overlay-box { text-align: center; }
-  #welcomeOverlay .w-topic { font-size: 1.3rem; font-weight: 700; color: var(--teal); margin: 0.5rem 0 0.25rem; }
-  #welcomeOverlay .w-rules { font-size: 0.82rem; color: var(--text2); line-height: 1.7; }
-  #welcomeOverlay .w-seq { font-size: 0.78rem; background: var(--teal-light); color: var(--teal-dark); border-radius: 6px; padding: 4px 10px; display: inline-block; margin: 0.5rem 0; }
-  #welcomeOverlay .w-flag { font-size: 2.2rem; }
-
-  /* Divider */
-  .divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
-
-  hr { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
-  p.hint { font-size: 0.78rem; color: var(--text3); line-height: 1.5; }
-
-  .text-center { text-align: center; }
-  .mt1 { margin-top: 0.5rem; }
-  .label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
-  .label-row label { font-size: 0.8rem; color: var(--text2); font-weight: 500; }
+@keyframes lw{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+@keyframes wb{0%,100%{height:6px}50%{height:28px}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-<div class="container">
-
-  <!-- Logo -->
+<div class="wrap">
   <div class="logo">
-    <div class="logo-icon">
-      <div class="logo-waves">
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
-    </div>
-    <div class="logo-text">موجة</div>
-    <span class="version-tag">v2.4</span>
+    <div class="logo-icon"><div class="lw"><span></span><span></span><span></span><span></span><span></span></div></div>
+    <div class="logo-name">مو<span>جة</span></div>
+    <div class="logo-tag">v3.4 · جلسات صوتية مؤقتة</div>
   </div>
 
   <!-- HOME -->
-  <div id="homeScreen" class="screen active">
-    <div class="card">
-      <div class="card-title">ابدأ موجة جديدة</div>
-      <div class="input-group">
-        <label>موضوع الجلسة</label>
-        <input type="text" id="htopic" placeholder="مثال: سوالف الطريق، نقاش تقني..." maxlength="60">
+  <div id="s-home" class="screen active">
+    <div class="hero-v2">
+      <div class="hero-badge">v3.4 — آخر تحديث</div>
+      <h1 class="hero-h">سوالف الطريق<br><span class="hero-accent">بدون فوضى</span></h1>
+      <p class="hero-sub">جلسة صوتية مؤقتة تنتهي تلقائياً ولا تترك أثر — ابدأ في ثوانٍ</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-num" data-target="3100000">0</div><div class="stat-label">مستمع</div></div>
+      <div class="stat-div"></div>
+      <div class="stat-item"><div class="stat-num" data-target="20500000">0</div><div class="stat-label">جلسة صوتية</div></div>
+      <div class="stat-div"></div>
+      <div class="stat-item"><div class="stat-num" data-target="98">0</div><div class="stat-label stat-pct">% رضا</div></div>
+    </div>
+
+    <div class="acards">
+      <div class="acard" onclick="go('create')">
+        <div class="aicon b">📡</div>
+        <div class="acard-text"><h3>ابدأ جلسة</h3><p>أنت المذيع — حدد الموضوع والوقت</p></div>
+        <div class="acard-arrow">←</div>
       </div>
-      <div class="input-group">
-        <label>اسمك</label>
-        <input type="text" id="hname" placeholder="اسمك كالمضيف" maxlength="30">
+      <div class="acard" onclick="go('join')">
+        <div class="aicon j">🎧</div>
+        <div class="acard-text"><h3>انضم لجلسة</h3><p>عندك كود أو رابط الجلسة</p></div>
+        <div class="acard-arrow">←</div>
       </div>
-      <div class="input-group">
-        <div class="label-row"><label>مدة الجلسة</label></div>
-        <select id="hduration">
-          <option value="10">10 دقائق</option>
-          <option value="20" selected>20 دقيقة</option>
+    </div>
+
+    <div class="features-strip">
+      <div class="feat-item"><span class="feat-ic">⚡</span>فوري بدون تسجيل</div>
+      <div class="feat-sep">·</div>
+      <div class="feat-item"><span class="feat-ic">🔒</span>خصوصية تامة</div>
+      <div class="feat-sep">·</div>
+      <div class="feat-item"><span class="feat-ic">⏱️</span>ينتهي تلقائياً</div>
+      <div class="feat-sep">·</div>
+      <div class="feat-item"><span class="feat-ic">🌍</span>علم الدولة</div>
+    </div>
+
+    <div class="reviews-section">
+      <div class="reviews-header">
+        <div class="reviews-title">آراء المستخدمين</div>
+        <div class="reviews-rating">⭐ 4.9</div>
+      </div>
+      <div class="reviews-scroll">
+        <div class="review-card">
+          <div class="review-top"><div class="review-av" style="background:#E1F5EE;color:#0F6E56">ع</div><div><div class="review-name">عبدالعزيز الشمري</div><div class="review-stars">★★★★★</div></div></div>
+          <div class="review-text">أفضل تطبيق للجلسات الصوتية، بدون تعقيد وسريع جداً. صرنا نستخدمه يومياً في رحلاتنا</div>
+        </div>
+        <div class="review-card">
+          <div class="review-top"><div class="review-av" style="background:#FAEEDA;color:#854F0B">ن</div><div><div class="review-name">نورة الحارثي</div><div class="review-stars">★★★★★</div></div></div>
+          <div class="review-text">ممتاز! الجلسة تنتهي لحالها وما فيه أي تسجيلات. يعطيك راحة بال تتكلم بحرية</div>
+        </div>
+        <div class="review-card">
+          <div class="review-top"><div class="review-av" style="background:#EEE6FF;color:#5B2D9E">م</div><div><div class="review-name">محمد القحطاني</div><div class="review-stars">★★★★★</div></div></div>
+          <div class="review-text">استخدمناه في سفرة من الرياض لأبها، ٦ ساعات كلام وما انقطع الصوت ولا مرة</div>
+        </div>
+        <div class="review-card">
+          <div class="review-top"><div class="review-av" style="background:#E1F5EE;color:#0F6E56">س</div><div><div class="review-name">سلطان العتيبي</div><div class="review-stars">★★★★☆</div></div></div>
+          <div class="review-text">بسيط ومباشر، ما تحتاج تفتح حساب ولا تنزّل تطبيق. فكرة ذكية جداً</div>
+        </div>
+        <div class="review-card">
+          <div class="review-top"><div class="review-av" style="background:#FCE4EC;color:#880E4F">ر</div><div><div class="review-name">ريم الدوسري</div><div class="review-stars">★★★★★</div></div></div>
+          <div class="review-text">استخدمناه في الفريق أثناء العمل، الكود يشتغل في ثواني والصوت واضح</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-footer">موجة · v3.4 · <span id="live-count">—</span> جلسة نشطة الآن</div>
+  </div>
+
+  <!-- CREATE -->
+  <div id="s-create" class="screen">
+    <div class="fl">بيانات الجلسة</div>
+    <div class="fld"><label>اسمك</label><input type="text" id="hname" placeholder="عبدالله" maxlength="20"></div>
+    <div class="fld"><label>موضوع الجلسة</label><textarea id="htopic" placeholder="مثال: ريادة الأعمال وأخطاء البداية"></textarea></div>
+    <div class="frow">
+      <div class="fld"><label>الوجهة</label><input type="text" id="hdest" placeholder="الرياض" maxlength="20"></div>
+      <div class="fld"><label>المدة</label>
+        <select id="hdur">
           <option value="30">30 دقيقة</option>
-          <option value="45">45 دقيقة</option>
-          <option value="60">ساعة</option>
+          <option value="60" selected>ساعة</option>
+          <option value="120">ساعتين</option>
+          <option value="180">3 ساعات</option>
         </select>
       </div>
-      <div class="input-group">
-        <div class="label-row"><label>عدد المتحدثين</label></div>
-        <div class="room-size-opts">
-          <button class="room-size-opt" data-size="3" onclick="selectSize(3)">3</button>
-          <button class="room-size-opt selected" data-size="5" onclick="selectSize(5)">5</button>
-          <button class="room-size-opt" data-size="10" onclick="selectSize(10)">10</button>
-        </div>
-        <p class="hint">عدد المتحدثين في الغرفة (لا يشمل المستمعين)</p>
-      </div>
-
-      <div class="input-group">
-        <div class="label-row"><label>صلاحية التحدث للضيوف</label></div>
-        <div class="perm-mode-toggle">
-          <button class="perm-opt selected" id="permFree" onclick="selectPerm('free')">
-            <span class="perm-icon">🎙️</span>
-            تحدث فوراً
-          </button>
-          <button class="perm-opt" id="permGated" onclick="selectPerm('gated')">
-            <span class="perm-icon">🔐</span>
-            بإذن الهوست
-          </button>
-        </div>
-        <p class="hint" id="permHint">الضيوف يمكنهم التحدث فور دخول الغرفة مباشرة.</p>
-      </div>
-
-      <button class="btn btn-primary" onclick="startSession()">🎙️ افتح الجلسة</button>
     </div>
+    <div class="fld"><label>حالتك</label>
+      <div class="chips">
+        <div class="chip on" onclick="pickChip(this)">مسافر</div>
+        <div class="chip" onclick="pickChip(this)">في المكتب</div>
+        <div class="chip" onclick="pickChip(this)">وقت حر</div>
+        <div class="chip" onclick="pickChip(this)">في الانتظار</div>
+      </div>
+    </div>
+    <div class="fld"><label>الحد الأقصى للمتحدثين</label>
+      <div class="size-chips">
+        <div class="size-chip" data-sz="3" onclick="pickSize(3)">3</div>
+        <div class="size-chip on" data-sz="5" onclick="pickSize(5)">5</div>
+        <div class="size-chip" data-sz="10" onclick="pickSize(10)">10</div>
+      </div>
+    </div>
+    <div class="fld">
+      <label>صلاحية التحدث للضيوف</label>
+      <div class="perm-toggle">
+        <button class="perm-opt on" id="po-free" onclick="pickPerm('free')"><span class="pi">🎙️</span>تحدث فوراً</button>
+        <button class="perm-opt" id="po-gated" onclick="pickPerm('gated')"><span class="pi">🔐</span>بإذن الهوست</button>
+      </div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:3px" id="perm-hint">الضيوف يتحدثون فور دخولهم مباشرة</div>
+    </div>
+    <button class="btn btn-p" onclick="createSession()">📡 ابدأ البث</button>
+    <button class="btn btn-g" onclick="go('home')">رجوع</button>
+  </div>
 
-    <div class="card">
-      <div class="card-title">انضم لجلسة</div>
-      <div class="input-group">
-        <label>كود الجلسة (6 أرقام)</label>
-        <input type="number" id="jcode" placeholder="000000" maxlength="6">
-      </div>
-      <div class="input-group">
-        <label>اسمك</label>
-        <input type="text" id="jname" placeholder="اسمك" maxlength="30">
-      </div>
-      <div class="mode-cards">
-        <div class="mode-card" onclick="joinSession('speaker')">
-          <span class="mode-icon">🎙️</span>
-          <div class="mode-label">متحدث</div>
-          <div class="mode-desc">تشارك بصوتك</div>
-        </div>
-        <div class="mode-card" onclick="joinSession('listener')">
-          <span class="mode-icon">👂</span>
-          <div class="mode-label">مستمع</div>
-          <div class="mode-desc">تستمع فقط</div>
-        </div>
-      </div>
+  <!-- LOADING -->
+  <div id="s-loading" class="screen">
+    <div class="lbox">
+      <div class="spin"></div>
+      <div class="ltitle" id="ltitle">جاري التحضير...</div>
+      <div class="lsub" id="lsub">لحظة من فضلك</div>
+      <div class="lerr" id="lerr"></div>
     </div>
   </div>
 
-  <!-- HOST ROOM -->
-  <div id="hostScreen" class="screen">
-    <div class="room-header">
-      <div class="room-topic" id="h-room-topic">—</div>
-      <div class="room-meta">
-        <span>أنت الهوست</span>
-        <span class="room-code-badge" id="h-room-code">—</span>
-        <span id="h-perm-badge" style="font-size:0.75rem;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 7px;">—</span>
+  <!-- JOIN -->
+  <div id="s-join" class="screen">
+    <div class="jbox">
+      <p>أدخل الكود المكون من 6 أرقام</p>
+      <input type="text" class="codeinput" id="jcode" placeholder="000000" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+      <button class="btn btn-p" onclick="joinSession()">انضم للجلسة</button>
+    </div>
+    <div class="fld"><label>اسمك</label><input type="text" id="gname" placeholder="محمد" maxlength="20"></div>
+    <div class="fld"><label>طريقة المشاركة</label>
+      <div class="chips">
+        <div class="chip on" id="mode-talk" onclick="setMode('talk')">🎙️ متحدث</div>
+        <div class="chip" id="mode-listen" onclick="setMode('listen')">👂 مستمع فقط</div>
       </div>
     </div>
-
-    <div class="timer-bar" id="h-timer-bar">
-      <span class="t-label">⏱</span>
-      <span class="t-time" id="h-timer">00:00</span>
-      <span style="font-size:0.75rem;color:var(--text2)" id="h-count">0 متحدث</span>
-    </div>
-
-    <!-- Permission request notification -->
-    <div class="perm-req-banner" id="permReqBanner">
-      <div class="perm-req-text" id="permReqText">📨 طلب للحديث</div>
-      <div class="perm-req-actions" id="permReqActions"></div>
-    </div>
-
-    <!-- Share -->
-    <div class="card">
-      <div class="card-title">مشاركة الجلسة</div>
-      <div class="share-row">
-        <input type="text" id="shareLink" readonly>
-        <button class="btn btn-secondary btn-sm" onclick="copyLink()">نسخ</button>
-        <button class="btn btn-primary btn-sm" onclick="shareWA()">واتساب</button>
-      </div>
-    </div>
-
-    <!-- Raise hand queue -->
-    <div class="card" id="h-queue-card" style="display:none">
-      <div class="card-title">🙋 قائمة الانتظار</div>
-      <div id="h-queue-list"></div>
-    </div>
-
-    <!-- Participants -->
-    <div class="card">
-      <div class="card-title">المتحدثون <span id="h-size-info" style="font-weight:400;color:var(--text3)"></span></div>
-      <div class="participants-list" id="h-participants"></div>
-    </div>
-
-    <!-- Listeners -->
-    <div class="card" id="h-listeners-card" style="display:none">
-      <div class="card-title">المستمعون</div>
-      <div class="participants-list" id="h-listeners"></div>
-    </div>
-
-    <button class="btn btn-danger" onclick="endSession()">⛔ إنهاء الجلسة</button>
+    <button class="btn btn-g" onclick="go('home')">رجوع</button>
   </div>
 
-  <!-- GUEST ROOM -->
-  <div id="guestScreen" class="screen">
-    <div class="room-header">
-      <div class="room-topic" id="g-room-topic">جاري الاتصال...</div>
-      <div class="room-meta">
-        <span id="g-role-label">متحدث</span>
-        <span class="room-code-badge" id="g-room-code">—</span>
+  <!-- MODE SELECT OVERLAY -->
+  <div class="welcome" id="modeSelect" style="display:none">
+    <div class="welcome-card">
+      <div class="welcome-icon">🎙️</div>
+      <h2>كيف تريد الدخول؟</h2>
+      <p style="font-size:13px;color:var(--tx2);margin-bottom:1.5rem">اختر طريقة مشاركتك في الجلسة</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem">
+        <div class="acard" style="cursor:pointer;animation:none;opacity:1" onclick="confirmMode('talk')">
+          <div class="aicon b" style="font-size:24px">🎙️</div>
+          <div><h3>متحدث</h3><p>تشارك بصوتك في الجلسة</p></div>
+        </div>
+        <div class="acard" style="cursor:pointer;animation:none;opacity:1" onclick="confirmMode('listen')">
+          <div class="aicon j" style="font-size:24px">👂</div>
+          <div><h3>مستمع فقط</h3><p>تستمع بدون مشاركة بالصوت</p></div>
+        </div>
       </div>
+      <div class="fld"><label>اسمك</label><input type="text" id="mname" placeholder="محمد" maxlength="20" style="background:var(--bg2)"></div>
     </div>
-
-    <div class="timer-bar" id="g-timer-bar">
-      <span class="t-label">⏱</span>
-      <span class="t-time" id="g-timer">—</span>
-      <span style="font-size:0.75rem;color:var(--text2)" id="g-count">—</span>
-    </div>
-
-    <!-- Waiting for permission -->
-    <div class="card" id="waitingPermCard" style="display:none">
-      <div class="waiting-perm">
-        <span class="spin">⏳</span>
-        <p style="margin-top:.5rem">بانتظار إذن الهوست للتحدث...</p>
-      </div>
-    </div>
-
-    <!-- Guest controls -->
-    <div class="card" id="guestControlsCard">
-      <div class="card-title">التحكم</div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        <button class="btn btn-secondary btn-sm" id="g-mic-btn" onclick="toggleMic()" style="flex:1">🎙️ صوت</button>
-        <button class="btn btn-amber btn-sm" id="g-raise-btn" onclick="toggleRaise()" style="flex:1">✋ طلب الكلام</button>
-      </div>
-    </div>
-
-    <!-- Participants -->
-    <div class="card">
-      <div class="card-title">المتحدثون</div>
-      <div class="participants-list" id="g-participants"></div>
-    </div>
-
-    <button class="btn btn-danger mt1" onclick="leaveSession()">🚪 مغادرة الجلسة</button>
   </div>
 
-</div><!-- /container -->
-
-<!-- Welcome Overlay -->
-<div class="overlay" id="welcomeOverlay">
-  <div class="overlay-box">
-    <div class="w-flag" id="w-flag">🌍</div>
-    <div class="w-topic" id="w-topic">—</div>
-    <div class="w-seq" id="w-seq"></div>
-    <div class="divider"></div>
-    <div class="w-rules">
-      🎙️ تحدث باحترام<br>
-      ⏱ الجلسة مؤقتة ولا تُحفظ<br>
-      👂 استمع جيداً قبل الرد
+  <!-- HOST SESSION -->
+  <div id="s-session" class="screen">
+    <div class="sh">
+      <div><div class="stitle" id="st">—</div><div class="smeta" id="sm">—</div></div>
+      <div class="lpill"><div class="ldot"></div><span>مباشر</span></div>
     </div>
-    <div style="margin-top:1rem">
-      <button class="btn btn-primary" onclick="closeWelcome()">دخول الجلسة ✨</button>
+    <div class="warnbanner" id="warnbanner">⚠️ الجلسة ستنتهي خلال 5 دقائق</div>
+    <div class="spkcard">
+      <div class="spkav" id="spkav">أ</div>
+      <div class="spkname" id="spkname">أنت تتحدث</div>
+      <div class="wbars on" id="wv">
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+      </div>
+    </div>
+    <div class="codebox">
+      <p>🔢 كود الجلسة — شاركه مع من تريد</p>
+      <div class="bigcode" id="bigcode">——</div>
+      <div class="srow">
+        <div class="slink" id="slink">—</div>
+        <button class="cbtn" onclick="copyLink()">نسخ</button>
+        <button class="wabtn" onclick="shareWa()">واتساب</button>
+        <button class="cbtn" onclick="shareMawja()">↗</button>
+      </div>
+    </div>
+
+    <!-- Perm request banner -->
+    <div class="perm-banner" id="permBanner">
+      <div class="perm-banner-title" id="permBannerTitle">📨 طلب للتحدث</div>
+      <div class="perm-banner-btns" id="permBannerBtns"></div>
+    </div>
+
+    <div class="qbox" id="qbox" style="display:none">
+      <div class="qlabel">✋ طلبات الكلام</div>
+      <div class="qlist" id="qlist"></div>
+    </div>
+
+    <div class="timerbox">
+      <div class="timerlabel">ينتهي بعد</div>
+      <div class="timerclock" id="tclock">—</div>
+    </div>
+    <div class="plabel" id="plabel">المتحدثون (1)</div>
+    <div class="plist" id="plist"></div>
+    <div class="ctrls">
+      <div class="ctrl" id="mc" onclick="toggleMute()">🎙️ صوت</div>
+      <div class="ctrl leave" onclick="endSession()">إنهاء الجلسة</div>
+    </div>
+  </div>
+
+  <!-- GUEST SESSION -->
+  <div id="s-guest" class="screen">
+    <div class="sh">
+      <div><div class="stitle" id="gt">جلسة مباشرة</div><div class="smeta" id="gm"></div></div>
+      <div class="lpill"><div class="ldot"></div><span>مباشر</span></div>
+    </div>
+    <div class="spkcard">
+      <div class="spkav" id="gspkav">م</div>
+      <div class="spkname" id="gspkname">المضيف يتحدث</div>
+      <div class="wbars on">
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+      </div>
+    </div>
+    <div class="waiting-perm" id="waitingPerm" style="display:none">
+      <div class="waiting-spin"></div>
+      <div style="font-size:13px;color:var(--ad);font-weight:500">⏳ بانتظار إذن الهوست للتحدث...</div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:5px">سيُعلمك الهوست حين يأذن لك</div>
+    </div>
+    <div class="plabel">المشاركون</div>
+    <div class="plist" id="gplist"></div>
+    <div class="ctrls" id="gctrls">
+      <div class="ctrl" id="gmc" onclick="toggleGuestMute()">🎙️ صوت</div>
+      <div class="ctrl" id="rc" onclick="toggleRaise()">✋ طلب الكلام</div>
+      <div class="ctrl leave" onclick="leaveSession()">مغادرة</div>
+    </div>
+    <div class="ctrls" id="lctrls" style="display:none">
+      <div class="ctrl listen-mode">👂 وضع الاستماع</div>
+      <div class="ctrl leave" onclick="leaveSession()">مغادرة</div>
     </div>
   </div>
 </div>
 
-<!-- Rating Overlay -->
-<div class="overlay" id="ratingOverlay">
-  <div class="overlay-box text-center">
-    <div style="font-size:1.15rem;font-weight:700;margin-bottom:.25rem">كيف كانت الجلسة؟</div>
-    <div class="stars" id="stars-row">
+<!-- Welcome overlay -->
+<div class="welcome" id="welcome" style="display:none">
+  <div class="welcome-card">
+    <div class="welcome-flag" id="w-flag">🌍</div>
+    <div class="welcome-icon" style="font-size:30px;margin-bottom:.4rem">👋</div>
+    <h2 id="w-title">أهلاً بك في الجلسة</h2>
+    <div class="welcome-seq" id="w-seq" style="display:none"></div>
+    <p style="font-size:13px;color:var(--tx3);margin-bottom:8px">الموضوع</p>
+    <div class="welcome-topic" id="w-topic">—</div>
+    <div class="welcome-rules">
+      🎙️ اطلب الكلام قبل التحدث<br>
+      🔇 كن في مكان هادئ<br>
+      ⏱️ الجلسة مؤقتة وتنتهي تلقائياً<br>
+      🚫 لا تسجيل ولا أثر بعد الانتهاء
+    </div>
+    <button class="btn btn-p" onclick="closeWelcome()" style="margin-top:0">دخول الجلسة ✓</button>
+  </div>
+</div>
+
+<!-- Rating overlay -->
+<div class="rating-overlay" id="ratingOverlay" style="display:none">
+  <div class="rating-card">
+    <h2>كيف كانت الجلسة؟</h2>
+    <p>رأيك يساعدنا على التحسين</p>
+    <div class="stars" id="stars">
       <span class="star" onclick="rateStar(1)">⭐</span>
       <span class="star" onclick="rateStar(2)">⭐</span>
       <span class="star" onclick="rateStar(3)">⭐</span>
@@ -449,657 +522,365 @@
       <span class="star" onclick="rateStar(5)">⭐</span>
     </div>
     <div class="rating-msg" id="rating-msg"></div>
-    <button class="btn btn-primary mt1" onclick="submitRating()">إرسال التقييم</button>
-    <button class="btn btn-secondary mt1" onclick="skipRating()">تخطي</button>
+    <button class="btn btn-p" onclick="submitRating()" style="margin-top:0">إرسال التقييم</button>
+    <button class="btn btn-g" onclick="skipRating()">تخطي</button>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
+<audio id="ra" autoplay playsinline></audio>
 
 <script>
-// ===================== STATE =====================
-const VERSION = 'v2.4';
+// ===== STATE =====
+let peer=null,stream=null,calls={},dataConns={},isHost=false,muted=false,gMuted=false;
+let timerInt=null,myName='',myFlag='🌍',hostConn=null,raised=false,listenOnly=false;
+let guestMuteState={},participants={},raiseQueue=[],pendingPermQueue=[];
+let selectedRating=0,sessionTopic='',sessionCode='',sessionLink='';
+let roomMaxSize=5,permMode='free',guestSeqCounter=0,pendingCode='';
 
-let peer, stream, myName, myRole, mySeq, myFlag;
-let hostConn = null;      // guest → host data connection
-let dataConns = {};       // host: peerId → DataConnection
-let calls = {};           // peerId → MediaConnection
-let participants = {};    // peerId → {name, seq, flag, role, muted, raised, permGranted}
-let listenerConns = {};   // peerId → DataConnection (listeners only)
+// ===== UTILS =====
+const $=id=>document.getElementById(id);
+function go(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('s-'+s).classList.add('active')}
+function toast(msg,d=2500){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
+function loading(t,s,e=''){$('ltitle').textContent=t;$('lsub').textContent=s;$('lerr').textContent=e;go('loading')}
+function mkCode(){return Math.floor(100000+Math.random()*900000).toString()}
+function seqLabel(n){return n?`ضيف${n}`:''}
+function nextSeq(){return++guestSeqCounter}
 
-let timerInt = null, timerSec = 0;
-let raised = false, gMuted = false;
-let selectedRating = 0;
-let sessionTopic = '', sessionCode = '', sessionDuration = 20;
-let guestSeqCounter = 0;
-let roomMaxSize = 5;       // max speakers
-let permMode = 'free';     // 'free' | 'gated'
-let welcomePending = false;
-let pendingPermQueue = []; // peerId waiting for permission
-
-// ---- Country detection ----
-async function detectCountry() {
-  try {
-    const r = await fetch('https://ipapi.co/json/');
-    if (!r.ok) return '🌍';
-    const d = await r.json();
-    return countryToFlag(d.country_code || '');
-  } catch { return '🌍'; }
+// ===== HOME COUNTERS =====
+function formatNum(n){if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+' مليون';if(n>=1000)return(n/1000).toFixed(0)+' ألف';return n+''}
+function animateCounter(el){
+  const target=+el.dataset.target,dur=1600,start=performance.now();
+  function step(now){const p=Math.min((now-start)/dur,1),ease=1-Math.pow(1-p,3);el.textContent=formatNum(Math.round(ease*target));if(p<1)requestAnimationFrame(step)}
+  requestAnimationFrame(step);
 }
+function initCounters(){document.querySelectorAll('.stat-num').forEach(el=>{const obs=new IntersectionObserver(entries=>{if(entries[0].isIntersecting){animateCounter(el);obs.disconnect()}},{threshold:.3});obs.observe(el);})}
+function initLiveCount(){const base=Math.floor(Math.random()*40)+12,el=$('live-count');if(el)el.textContent=base;setInterval(()=>{if(!el)return;const delta=Math.random()<.5?1:-1,cur=parseInt(el.textContent)||base;el.textContent=Math.max(5,cur+delta)},7000);}
 
-function countryToFlag(code) {
-  if (!code || code.length !== 2) return '🌍';
-  return String.fromCodePoint(
-    ...code.toUpperCase().split('').map(c => 0x1F1E6 - 65 + c.charCodeAt(0))
-  );
-}
+window.addEventListener('load',()=>{
+  initCounters();initLiveCount();
+  const j=new URLSearchParams(location.search).get('join');
+  if(j){pendingCode=j.replace(/\D/g,'').slice(0,6);$('modeSelect').style.display='flex';}
+});
 
-// ---- Utilities ----
-const $ = id => document.getElementById(id);
-function go(s) {
-  document.querySelectorAll('.screen').forEach(e => e.classList.remove('active'));
-  $(s + 'Screen').classList.add('active');
+// ===== COUNTRY FLAG =====
+async function detectCountry(){
+  try{const r=await fetch('https://ipapi.co/json/');if(!r.ok)return'🌍';const d=await r.json();return countryToFlag(d.country_code||'');}catch{return'🌍'}
 }
-function toast(msg, dur = 2800) {
-  const t = $('toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), dur);
-}
+function countryToFlag(code){if(!code||code.length!==2)return'🌍';return String.fromCodePoint(...code.toUpperCase().split('').map(c=>0x1F1E6-65+c.charCodeAt(0)));}
 
-function selectSize(n) {
-  roomMaxSize = n;
-  document.querySelectorAll('.room-size-opt').forEach(b => b.classList.toggle('selected', +b.dataset.size === n));
+// ===== UI OPTIONS =====
+function pickChip(el){document.querySelectorAll('#s-create .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
+function pickSize(n){roomMaxSize=n;document.querySelectorAll('.size-chip').forEach(c=>c.classList.toggle('on',+c.dataset.sz===n));}
+function pickPerm(mode){
+  permMode=mode;
+  $('po-free').classList.toggle('on',mode==='free');
+  $('po-gated').classList.toggle('on',mode==='gated');
+  $('perm-hint').textContent=mode==='free'?'الضيوف يتحدثون فور دخولهم مباشرة':'الهوست يمنح الإذن لكل ضيف قبل التحدث';
 }
+function setMode(m){listenOnly=m==='listen';$('mode-talk').classList.toggle('on',!listenOnly);$('mode-listen').classList.toggle('on',listenOnly);}
 
-function selectPerm(mode) {
-  permMode = mode;
-  $('permFree').classList.toggle('selected', mode === 'free');
-  $('permGated').classList.toggle('selected', mode === 'gated');
-  $('permHint').textContent = mode === 'free'
-    ? 'الضيوف يمكنهم التحدث فور دخول الغرفة مباشرة.'
-    : 'يجب أن يمنح الهوست الإذن لكل ضيف قبل أن يتحدث.';
-}
+// ===== SHARE =====
+function copyLink(){navigator.clipboard.writeText(sessionLink).then(()=>toast('تم نسخ الرابط ✓'))}
+function shareWa(){window.open('https://wa.me/?text='+encodeURIComponent('انضم لجلستي على موجة 🎙️\nالكود: '+sessionCode+'\n'+sessionLink),'_blank')}
+function shareMawja(){const text='انضم لجلستي على موجة 🎙️\nالكود: '+sessionCode+'\n'+sessionLink;if(navigator.share)navigator.share({title:'موجة',text,url:sessionLink}).catch(()=>{});else navigator.clipboard.writeText(text).then(()=>toast('تم نسخ رابط المشاركة ✓'));}
 
-// ---- Audio ----
-function beep(type) {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    const freqs = { join:[440,520], leave:[300,240], raise:[600,640], granted:[520,660,780] };
-    const notes = freqs[type] || [440];
-    let t = ctx.currentTime;
-    notes.forEach(f => {
-      o.frequency.setValueAtTime(f, t);
-      g.gain.setValueAtTime(0.12, t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-      t += 0.18;
-    });
-    o.start(); o.stop(t + 0.05);
-  } catch {}
-}
-
-// ---- Sound synthesis ----
-let adPlayed = { intro: false, outro: false };
-function playAd(type) {
-  if (!window.speechSynthesis) return;
-  if (adPlayed[type]) return;
-  adPlayed[type] = true;
-  window.speechSynthesis.cancel();
-  const introText = 'أهلاً بك في موجة. هذه الرسالة برعاية موجة للجلسات الصوتية. يمكنك إضافة إعلانك الصوتي هنا وسيسمعه الآلاف.';
-  const outroText = 'شكراً لاستخدامك موجة. يمكنك إضافة إعلانك هنا. إلى اللقاء.';
-  const msg = new SpeechSynthesisUtterance(type === 'intro' ? introText : outroText);
-  msg.lang = 'ar-SA'; msg.rate = 0.92; msg.pitch = 1.1;
-  const voices = window.speechSynthesis.getVoices();
-  const v = voices.find(x => x.lang === 'ar-SA') || voices.find(x => x.lang.startsWith('ar'));
-  if (v) msg.voice = v;
+// ===== ADS =====
+let adPlayed={intro:false,outro:false};
+function playAd(type){
+  if(!window.speechSynthesis||adPlayed[type])return;adPlayed[type]=true;window.speechSynthesis.cancel();
+  const introText='أهلاً بك في موجة. هذه الرسالة برعاية موجة للجلسات الصوتية. يمكنك إضافة إعلانك الصوتي هنا وسيسمعه الآلاف.';
+  const outroText='شكراً لاستخدامك موجة. يمكنك إضافة إعلانك هنا. إلى اللقاء.';
+  const msg=new SpeechSynthesisUtterance(type==='intro'?introText:outroText);
+  msg.lang='ar-SA';msg.rate=0.92;msg.pitch=1.1;
+  const voices=window.speechSynthesis.getVoices();
+  const v=voices.find(x=>x.lang==='ar-SA')||voices.find(x=>x.lang.startsWith('ar'));if(v)msg.voice=v;
   window.speechSynthesis.speak(msg);
 }
-if (window.speechSynthesis) { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices(); }
+function resetAds(){if(window.speechSynthesis)window.speechSynthesis.cancel();adPlayed={intro:false,outro:false};}
+if(window.speechSynthesis){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
 
-// ---- Sequential numbering ----
-function nextGuestSeq() {
-  guestSeqCounter++;
-  return guestSeqCounter;
+// ===== SOUND =====
+const AC=new(window.AudioContext||window.webkitAudioContext)();
+function playSound(type){
+  try{
+    const g=AC.createGain();g.connect(AC.destination);
+    if(type==='join'){[0,0.15].forEach((t,i)=>{const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.setValueAtTime(520+i*160,AC.currentTime+t);o.frequency.exponentialRampToValueAtTime(680+i*160,AC.currentTime+t+0.18);g.gain.setValueAtTime(0,AC.currentTime+t);g.gain.linearRampToValueAtTime(0.18,AC.currentTime+t+0.05);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+t+0.25);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+0.28);});}
+    else if(type==='raise'){[0,0.18,0.36].forEach(t=>{const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(0,AC.currentTime+t);g.gain.linearRampToValueAtTime(0.15,AC.currentTime+t+0.04);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+t+0.14);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+0.16);});}
+    else if(type==='leave'){const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.setValueAtTime(520,AC.currentTime);o.frequency.exponentialRampToValueAtTime(320,AC.currentTime+0.3);g.gain.setValueAtTime(0.14,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.35);o.start(AC.currentTime);o.stop(AC.currentTime+0.38);}
+    else if(type==='allowed'){[0,0.12,0.24].forEach((t,i)=>{const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.value=[520,660,780][i];g.gain.setValueAtTime(0,AC.currentTime+t);g.gain.linearRampToValueAtTime(0.2,AC.currentTime+t+0.05);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+t+0.22);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+0.25);});}
+  }catch(e){}
 }
-function seqLabel(seq) { return seq ? `ضيف${seq}` : ''; }
 
-// ---- PeerJS init ----
-function initPeer(id) {
-  return new Promise((res, rej) => {
-    const p = new Peer(id, { debug: 0 });
-    p.on('open', () => res(p));
-    p.on('error', rej);
+// ===== TIMER =====
+function startTimer(min){
+  const end=Date.now()+min*60000;let warned=false;
+  timerInt=setInterval(()=>{
+    const r=end-Date.now();
+    if(r<=0){clearInterval(timerInt);$('tclock').textContent='انتهت';if(isHost)endSession();else{resetAds();showRating();}return}
+    const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);
+    if($('tclock'))$('tclock').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+    if(r<=300000&&!warned){warned=true;$('warnbanner').classList.add('show');toast('⚠️ الجلسة ستنتهي خلال 5 دقائق',4000)}
+    if(r<=60000&&$('tclock'))$('tclock').classList.add('warn');
+  },1000);
+}
+
+// ===== MIC =====
+async function getMic(listen){
+  if(listen){stream=null;return{ok:true,forced:false}}
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});return{ok:true,forced:false}}
+  catch(e){stream=null;toast('لا يوجد إذن للميكروفون — دخلت مستمعاً 👂',3500);return{ok:true,forced:true}}
+}
+
+// ===== ICE =====
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}]};
+
+// ===== HOST RENDER =====
+function renderHostList(){
+  const list=$('plist');list.innerHTML='';
+  const hr=document.createElement('div');hr.className='pitem';
+  hr.innerHTML=`<div class="pav host">${myName[0].toUpperCase()}</div>
+    <div class="pinfo"><div class="pname">${myName} <span class="pflag">${myFlag}</span></div>
+    <div class="pbadge">أنت · المضيف · ${permMode==='gated'?'🔐 بإذن':'🎙️ مفتوح'}</div></div>
+    <div class="hbtns"><div class="hbtn mute" onclick="toggleMute()">${muted?'🔊':'🔇'}</div></div>`;
+  list.appendChild(hr);
+  Object.entries(participants).forEach(([id,p])=>{
+    const row=document.createElement('div');row.className='pitem';row.id='pr-'+id;
+    const isMuted=guestMuteState[id]||false;
+    const needsPerm=permMode==='gated'&&!p.permGranted&&!p.listen;
+    const badge=p.listen?'👂 مستمع':(needsPerm?'⏳ بانتظار الإذن':(isMuted?'🔇 مكتوم':'🎙️ متحدث'));
+    row.innerHTML=`<div class="pav ${p.listen?'listen':'guest'}">${p.name[0].toUpperCase()}</div>
+      <div class="pinfo"><div class="pname">${p.name} <span class="pflag">${p.flag||'🌍'}</span> <span class="pseq">${seqLabel(p.seq)}</span></div>
+      <div class="pbadge">${badge}</div></div>
+      <div class="hbtns">
+        ${!p.listen&&!needsPerm?`<button class="hbtn mute" onclick="muteGuest('${id}')">${isMuted?'فتح':'كتم'}</button>`:''}
+        ${needsPerm?`<button class="hbtn perm" onclick="grantPerm('${id}')">✅ إذن</button>`:''}
+        <button class="hbtn kick" onclick="kickGuest('${id}')">طرد</button>
+      </div>`;
+    list.appendChild(row);
   });
+  $('plabel').textContent=`المشاركون (${Object.keys(participants).length+1})`;
+  if(muted){$('spkav').textContent='🔇';$('spkname').textContent='أنت مكتوم'}
+  else{$('spkav').textContent=myName[0].toUpperCase();$('spkname').textContent='أنت تتحدث'}
 }
 
-// ===================== HOST =====================
-async function startSession() {
-  const topic = $('htopic').value.trim();
-  const name = $('hname').value.trim();
-  if (!topic) { toast('أضف موضوع الجلسة 📝'); return; }
-  if (!name) { toast('أضف اسمك 👤'); return; }
-  sessionTopic = topic; myName = name;
-  sessionDuration = parseInt($('hduration').value);
-
-  myFlag = await detectCountry();
-
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  sessionCode = code;
-  const peerId = 'mawja-' + code;
-
-  toast('جاري إنشاء الجلسة... ⏳');
-  try { peer = await initPeer(peerId); } catch (e) { toast('خطأ في الاتصال، حاول مجدداً'); return; }
-
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-  } catch { toast('تعذر الوصول للميكروفون 🎤'); return; }
-
-  $('h-room-topic').textContent = topic;
-  $('h-room-code').textContent = code;
-  $('h-perm-badge').textContent = permMode === 'free' ? '🎙️ مفتوح' : '🔐 بإذن';
-  $('h-size-info').textContent = `(0 / ${roomMaxSize})`;
-
-  const shareUrl = `${location.origin}${location.pathname}?join=${code}`;
-  $('shareLink').value = shareUrl;
-
-  renderHostParticipants();
-  go('host');
-  startTimer(sessionDuration);
-  playAd('intro');
-
-  peer.on('connection', dc => handleHostDataConn(dc));
-  peer.on('call', call => handleHostCall(call));
-}
-
-function handleHostDataConn(dc) {
-  dc.on('open', () => {
-    const pid = dc.peer;
-    dataConns[pid] = dc;
-
-    dc.on('data', msg => {
-      if (msg.type === 'hello') {
-        const seq = nextGuestSeq();
-        const flag = msg.flag || '🌍';
-        const role = msg.role || 'speaker';
-
-        if (role === 'listener') {
-          listenerConns[pid] = dc;
-          participants[pid] = { name: msg.name, seq: null, flag, role: 'listener', muted: true, raised: false, permGranted: true };
-          dc.send({ type: 'welcome', topic: sessionTopic, code: sessionCode, seq: null, flag, permMode, duration: sessionDuration });
-          renderHostListeners();
-          toast(`👂 ${msg.name} ${flag} انضم مستمعاً`);
-          beep('join');
-        } else {
-          // speaker
-          const currentSpeakers = Object.values(participants).filter(p => p.role === 'speaker').length;
-          if (currentSpeakers >= roomMaxSize) {
-            dc.send({ type: 'full' });
-            dc.close();
-            return;
-          }
-          const granted = permMode === 'free';
-          participants[pid] = { name: msg.name, seq, flag, role: 'speaker', muted: false, raised: false, permGranted: granted };
-          dc.send({ type: 'welcome', topic: sessionTopic, code: sessionCode, seq, flag, permMode, granted, duration: sessionDuration });
-          toast(`👋 ${msg.name} ${flag} (ضيف${seq}) دخل`);
-          beep('join');
-
-          if (permMode === 'gated' && !granted) {
-            pendingPermQueue.push({ pid, name: msg.name, seq, flag });
-            showPermRequest();
-          }
-
-          updateHostCount();
-          renderHostParticipants();
-        }
-      } else if (msg.type === 'raise') {
-        if (participants[pid]) {
-          participants[pid].raised = msg.value;
-          if (msg.value) {
-            if (!pendingPermQueue.find(x => x.pid === pid)) {
-              pendingPermQueue.push({ pid, name: msg.name || participants[pid].name, seq: participants[pid].seq, flag: participants[pid].flag });
-            }
-            beep('raise');
-            showPermRequest();
-          } else {
-            pendingPermQueue = pendingPermQueue.filter(x => x.pid !== pid);
-            showPermRequest();
-          }
-          renderHostParticipants();
-        }
-      } else if (msg.type === 'leave') {
-        cleanupPeer(pid);
-      }
-    });
-
-    dc.on('close', () => cleanupPeer(pid));
-  });
-}
-
-function showPermRequest() {
-  const banner = $('permReqBanner');
-  const qCard = $('h-queue-card');
-  const qList = $('h-queue-list');
-
-  if (pendingPermQueue.length === 0) {
-    banner.classList.remove('show');
-    qCard.style.display = 'none';
-    return;
-  }
-
+function showPermBanner(){
+  const banner=$('permBanner');
+  if(pendingPermQueue.length===0){banner.classList.remove('show');return;}
   banner.classList.add('show');
-  qCard.style.display = 'block';
+  const next=pendingPermQueue[0];
+  $('permBannerTitle').innerHTML=`📨 <b>${next.flag||'🌍'} ${next.name}</b> ${seqLabel(next.seq)?'('+seqLabel(next.seq)+')':''} يطلب التحدث`;
+  const btns=$('permBannerBtns');btns.innerHTML='';
+  const y=document.createElement('button');y.className='pbtn-yes';y.textContent='✅ سماح';y.onclick=()=>grantPerm(next.id);btns.appendChild(y);
+  const n=document.createElement('button');n.className='pbtn-no';n.textContent='❌ رفض';n.onclick=()=>denyPerm(next.id);btns.appendChild(n);
+}
 
-  const next = pendingPermQueue[0];
-  $('permReqText').textContent = `📨 ${next.name} ${next.flag} ${next.seq ? '(ضيف' + next.seq + ')' : ''} يطلب الكلام`;
-  const actDiv = $('permReqActions');
-  actDiv.innerHTML = '';
-  const ybtn = document.createElement('button');
-  ybtn.className = 'btn btn-primary btn-sm'; ybtn.textContent = '✅ السماح';
-  ybtn.onclick = () => grantPermission(next.pid);
-  const nbtn = document.createElement('button');
-  nbtn.className = 'btn btn-danger btn-sm'; nbtn.textContent = '❌ رفض';
-  nbtn.onclick = () => denyPermission(next.pid);
-  actDiv.appendChild(ybtn); actDiv.appendChild(nbtn);
-
-  // Queue list
-  qList.innerHTML = '';
-  pendingPermQueue.forEach((q, i) => {
-    const div = document.createElement('div');
-    div.className = 'queue-item';
-    div.innerHTML = `<span class="queue-num">${i + 1}</span>
-      <span style="font-size:1rem">${q.flag}</span>
-      <span class="q-name">${q.name} ${q.seq ? '<small style="color:var(--text3)">(ضيف' + q.seq + ')</small>' : ''}</span>`;
-    qList.appendChild(div);
+function renderQueue(){
+  const all=[...pendingPermQueue,...raiseQueue.filter(r=>!pendingPermQueue.find(p=>p.id===r.id))];
+  if(all.length===0){$('qbox').style.display='none';return}
+  $('qbox').style.display='block';
+  const ql=$('qlist');ql.innerHTML='';
+  all.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='qitem';
+    const isPerm=!!pendingPermQueue.find(p=>p.id===item.id);
+    d.innerHTML=`<div class="qnum">${i+1}</div>
+      <span style="font-size:15px">${item.flag||'🌍'}</span>
+      <div class="qname">${item.name} <span class="qseq">${seqLabel(item.seq)}</span></div>
+      ${isPerm?`<button class="qallow" onclick="grantPerm('${item.id}')">إذن</button><button class="qdeny" onclick="denyPerm('${item.id}')">رفض</button>`
+              :`<button class="qallow" onclick="allowSpeak('${item.id}')">أعطه الكلام</button>`}`;
+    ql.appendChild(d);
   });
 }
 
-function grantPermission(pid) {
-  pendingPermQueue = pendingPermQueue.filter(x => x.pid !== pid);
-  if (participants[pid]) participants[pid].permGranted = true;
-  if (dataConns[pid]) dataConns[pid].send({ type: 'perm_granted' });
-  beep('granted');
-  toast('✅ تم السماح بالتحدث');
-  showPermRequest();
-  renderHostParticipants();
+function grantPerm(id){
+  pendingPermQueue=pendingPermQueue.filter(x=>x.id!==id);
+  if(participants[id])participants[id].permGranted=true;
+  const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'allowed'});
+  playSound('allowed');toast('تم منح الإذن ✅');
+  showPermBanner();renderHostList();renderQueue();
+}
+function denyPerm(id){
+  pendingPermQueue=pendingPermQueue.filter(x=>x.id!==id);
+  const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'denied'});
+  toast('تم رفض الطلب ❌');showPermBanner();renderQueue();
+}
+function allowSpeak(id){
+  const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'allowed'});
+  raiseQueue=raiseQueue.filter(x=>x.id!==id);
+  if(participants[id])participants[id].raised=false;
+  playSound('allowed');renderQueue();renderHostList();
+  toast('أعطيت الكلام لـ '+(participants[id]?.name||''));
 }
 
-function denyPermission(pid) {
-  pendingPermQueue = pendingPermQueue.filter(x => x.pid !== pid);
-  if (participants[pid]) participants[pid].raised = false;
-  if (dataConns[pid]) dataConns[pid].send({ type: 'perm_denied' });
-  toast('❌ تم رفض الطلب');
-  showPermRequest();
-  renderHostParticipants();
+function addParticipant(id,name,listen,flag,seq,permGranted){
+  participants[id]={name,listen,raised:false,flag:flag||'🌍',seq:seq||null,permGranted:permGranted!==false};
+  renderHostList();
 }
+function removeParticipant(id){
+  const name=participants[id]?.name||'ضيف';
+  delete participants[id];delete guestMuteState[id];
+  raiseQueue=raiseQueue.filter(x=>x.id!==id);
+  pendingPermQueue=pendingPermQueue.filter(x=>x.id!==id);
+  renderHostList();renderQueue();showPermBanner();
+  return name;
+}
+function muteGuest(id){guestMuteState[id]=!guestMuteState[id];const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'mute',value:guestMuteState[id]});renderHostList();toast((participants[id]?.name||'')+(guestMuteState[id]?' تم كتمه':' تم فتح صوته'));}
+function kickGuest(id){const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'kick'});const c=calls[id];if(c)c.close();toast((participants[id]?.name||'')+' تم طرده');removeParticipant(id);}
 
-function handleHostCall(call) {
-  calls[call.peer] = call;
-  call.answer(stream);
-  call.on('stream', remoteStream => {
-    const audio = document.createElement('audio');
-    audio.srcObject = remoteStream; audio.autoplay = true;
-    audio.id = 'audio-' + call.peer;
-    document.body.appendChild(audio);
+// ===== CREATE SESSION =====
+async function createSession(){
+  const name=$('hname').value.trim()||'المضيف';
+  const topic=$('htopic').value.trim();
+  const dest=$('hdest').value.trim();
+  const dur=parseInt($('hdur').value);
+  if(!topic){toast('أضف موضوع الجلسة ⚠️');return}
+  myName=name;isHost=true;sessionTopic=topic;
+  loading('جاري التحضير...','نكتشف موقعك');
+  myFlag=await detectCountry();
+  loading('جاري التحضير...','نطلب إذن الميكروفون');
+  const micRes=await getMic(false);if(!micRes.ok){go('create');return}
+  loading('جاري الاتصال...','ننشئ الجلسة');
+  const code=mkCode();sessionCode=code;
+  peer=new Peer('mwj'+code,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
+  let opened=false;
+  peer.on('open',()=>{
+    opened=true;
+    sessionLink=window.location.href.split('?')[0]+'?join='+code;
+    $('st').textContent=topic;
+    $('sm').textContent=dest?`${name} ← ${dest}`:name;
+    $('bigcode').textContent=code;
+    $('slink').textContent=sessionLink;
+    $('spkav').textContent=name[0].toUpperCase();
+    renderHostList();startTimer(dur);go('session');
+    playAd('intro');toast('الجلسة مباشرة 🎙️');
   });
-  call.on('close', () => {
-    const a = document.getElementById('audio-' + call.peer);
-    if (a) a.remove();
+  peer.on('error',e=>{if(!opened){loading('فشل',e.type,'');setTimeout(()=>go('create'),2500)}});
+  peer.on('call',call=>{
+    call.answer(stream||undefined);
+    const gId=call.peer;
+    call.on('stream',rs=>{
+      if(!participants[gId]?.listen){const a=document.createElement('audio');a.autoplay=true;a.srcObject=rs;a.id='aud-'+gId;document.body.appendChild(a)}
+    });
+    call.on('close',()=>{const n=removeParticipant(gId);const a=$('aud-'+gId);if(a)a.remove();playSound('leave');toast(n+' غادر')});
+    calls[gId]=call;
   });
-}
-
-function cleanupPeer(pid) {
-  if (participants[pid]) {
-    const p = participants[pid];
-    toast(`🚪 ${p.name} ${p.flag || ''} غادر`);
-    beep('leave');
-    delete participants[pid];
-    pendingPermQueue = pendingPermQueue.filter(x => x.pid !== pid);
-  }
-  if (dataConns[pid]) { try { dataConns[pid].close(); } catch {} delete dataConns[pid]; }
-  if (listenerConns[pid]) { try { listenerConns[pid].close(); } catch {} delete listenerConns[pid]; }
-  if (calls[pid]) { try { calls[pid].close(); } catch {} delete calls[pid]; }
-  const a = document.getElementById('audio-' + pid);
-  if (a) a.remove();
-  updateHostCount();
-  renderHostParticipants();
-  renderHostListeners();
-  showPermRequest();
-}
-
-function renderHostParticipants() {
-  const list = $('h-participants');
-  list.innerHTML = '';
-  const speakers = Object.entries(participants).filter(([, p]) => p.role === 'speaker');
-  speakers.forEach(([pid, p]) => {
-    const row = document.createElement('div');
-    row.className = 'participant-row';
-    row.innerHTML = `
-      <div class="p-avatar">${p.name[0] || '?'}</div>
-      <div class="p-info">
-        <div class="p-name-row">
-          <span class="p-flag">${p.flag || '🌍'}</span>
-          <span class="p-name">${p.name}</span>
-          ${p.seq ? `<span class="p-seq">ضيف${p.seq}</span>` : ''}
-          ${!p.permGranted ? `<span class="p-pending-badge">⏳ بانتظار</span>` : ''}
-          ${p.raised ? `<span class="p-pending-badge">✋ يطلب</span>` : ''}
-        </div>
-        <div class="p-role">${p.muted ? '🔇 مكتوم' : '🎙️ يتحدث'}</div>
-      </div>
-      <div class="p-actions">
-        <button class="btn btn-secondary btn-sm" onclick="muteGuest('${pid}')">${p.muted ? '🔈' : '🔇'}</button>
-        <button class="btn btn-danger btn-sm" onclick="kickGuest('${pid}')">✕</button>
-        ${!p.permGranted ? `<button class="btn btn-primary btn-sm" onclick="grantPermission('${pid}')">✅</button>` : ''}
-      </div>`;
-    list.appendChild(row);
-  });
-  if (speakers.length === 0) {
-    list.innerHTML = '<p class="hint text-center" style="padding:.5rem">لا يوجد متحدثون بعد...</p>';
-  }
-  updateHostCount();
-}
-
-function renderHostListeners() {
-  const card = $('h-listeners-card');
-  const list = $('h-listeners');
-  const listeners = Object.entries(participants).filter(([, p]) => p.role === 'listener');
-  if (listeners.length === 0) { card.style.display = 'none'; return; }
-  card.style.display = 'block';
-  list.innerHTML = '';
-  listeners.forEach(([, p]) => {
-    const row = document.createElement('div');
-    row.className = 'participant-row';
-    row.innerHTML = `
-      <div class="p-avatar" style="background:var(--text3)">${p.name[0] || '?'}</div>
-      <div class="p-info">
-        <div class="p-name-row">
-          <span class="p-flag">${p.flag || '🌍'}</span>
-          <span class="p-name">${p.name}</span>
-        </div>
-        <div class="p-role">👂 مستمع</div>
-      </div>`;
-    list.appendChild(row);
-  });
-}
-
-function updateHostCount() {
-  const speakerCount = Object.values(participants).filter(p => p.role === 'speaker').length;
-  $('h-count').textContent = `${speakerCount} متحدث`;
-  $('h-size-info').textContent = `(${speakerCount} / ${roomMaxSize})`;
-}
-
-function muteGuest(pid) {
-  if (participants[pid]) {
-    participants[pid].muted = !participants[pid].muted;
-    if (dataConns[pid]) dataConns[pid].send({ type: 'mute', value: participants[pid].muted });
-    renderHostParticipants();
-  }
-}
-function kickGuest(pid) {
-  if (dataConns[pid]) { dataConns[pid].send({ type: 'kick' }); dataConns[pid].close(); }
-  cleanupPeer(pid);
-}
-
-// ===================== GUEST =====================
-async function joinSession(role) {
-  const code = String($('jcode').value || '').replace(/\D/g, '').slice(0, 6);
-  const name = $('jname').value.trim();
-  if (code.length !== 6) { toast('الكود يجب أن يكون 6 أرقام 🔢'); return; }
-  if (!name) { toast('أضف اسمك 👤'); return; }
-  myName = name; myRole = role;
-
-  myFlag = await detectCountry();
-
-  toast('جاري الاتصال... ⏳');
-  try { peer = await initPeer(undefined); } catch { toast('خطأ في الاتصال'); return; }
-
-  const hostId = 'mawja-' + code;
-  sessionCode = code;
-
-  const dc = peer.connect(hostId, { reliable: true });
-  hostConn = dc;
-
-  dc.on('open', () => {
-    dc.send({ type: 'hello', name, role, flag: myFlag });
-  });
-
-  dc.on('data', msg => {
-    if (msg.type === 'welcome') {
-      sessionTopic = msg.topic || '';
-      sessionCode = msg.code || code;
-      mySeq = msg.seq;
-      const permGranted = msg.granted !== false; // free mode: always true, gated: depends
-
-      $('g-room-topic').textContent = msg.topic || '—';
-      $('g-room-code').textContent = msg.code || code;
-      $('g-role-label').textContent = role === 'listener' ? '👂 مستمع' : '🎙️ متحدث';
-
-      if (msg.duration) {
-        timerSec = msg.duration * 60;
-        renderGuestTimer();
+  peer.on('connection',conn=>{
+    const gId=conn.peer;dataConns[gId]=conn;
+    conn.on('data',d=>{
+      if(d.type==='hello'){
+        const gName=d.name||'ضيف',gListen=d.listen||false,gFlag=d.flag||'🌍';
+        if(!gListen&&Object.values(participants).filter(p=>!p.listen).length>=roomMaxSize){conn.send({type:'full'});return;}
+        const seq=gListen?null:nextSeq();
+        const permGranted=permMode==='free'||gListen;
+        addParticipant(gId,gName,gListen,gFlag,seq,permGranted);
+        conn.send({type:'welcome',topic,host:name,flag:gFlag,seq,permMode,permGranted});
+        if(permMode==='gated'&&!gListen&&!permGranted){pendingPermQueue.push({id:gId,name:gName,flag:gFlag,seq});showPermBanner();renderQueue();}
+        playSound('join');
+        toast(gName+' '+gFlag+(gListen?' دخل مستمعاً 👂':(seq?' ('+seqLabel(seq)+') انضم 🎙️':' انضم 🎙️')));
+        if(gListen&&stream){const lCall=peer.call(conn.peer,stream);calls[gId]=lCall;}
       }
+      if(d.type==='raise'&&participants[gId]){
+        if(d.value){raiseQueue.push({id:gId,name:participants[gId].name,flag:participants[gId].flag,seq:participants[gId].seq});}
+        else{raiseQueue=raiseQueue.filter(x=>x.id!==gId);}
+        participants[gId].raised=d.value;
+        renderQueue();renderHostList();
+        if(d.value){playSound('raise');toast((participants[gId]?.name||'')+' يطلب الكلام ✋')}
+      }
+    });
+    conn.on('close',()=>{delete dataConns[gId]});
+  });
+}
 
-      go('guest');
-
-      // Show welcome overlay
-      $('w-flag').textContent = myFlag;
-      $('w-topic').textContent = msg.topic || '—';
-      $('w-seq').textContent = mySeq ? `أنت: ضيف${mySeq}` : '';
-      $('welcomeOverlay').classList.add('open');
-      welcomePending = true;
-
-      if (role === 'speaker') {
-        if (msg.permMode === 'gated' && !permGranted) {
-          // Show waiting state — mic will be started after permission
-          $('waitingPermCard').style.display = 'block';
-          $('guestControlsCard').style.display = 'none';
-          toast('⏳ بانتظار إذن الهوست للتحدث');
-        } else {
-          startGuestAudio();
+// ===== JOIN SESSION =====
+async function joinSession(){
+  let code=$('jcode').value.trim();
+  const name=$('gname').value.trim()||'ضيف';
+  if(!code||code.length<6){toast('أدخل الكود المكون من 6 أرقام ⚠️');return}
+  code=code.replace(/\D/g,'').slice(0,6);
+  myName=name;
+  loading('جاري التحضير...','نكتشف موقعك');
+  myFlag=await detectCountry();
+  loading('جاري التحضير...','نطلب إذن الميكروفون');
+  const micR=await getMic(listenOnly);if(!micR.ok){go('join');return}
+  if(micR.forced)listenOnly=true;
+  loading('جاري الاتصال...','نبحث عن الجلسة');
+  peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
+  peer.on('open',()=>{
+    const pid='mwj'+code;
+    hostConn=peer.connect(pid);
+    hostConn.on('open',()=>{hostConn.send({type:'hello',name,listen:listenOnly,flag:myFlag});});
+    hostConn.on('data',d=>{
+      if(d.type==='welcome'){
+        $('w-flag').textContent=myFlag;
+        $('w-title').textContent='أهلاً '+name+' في الجلسة';
+        $('w-topic').textContent=d.topic||'—';
+        if(d.seq){$('w-seq').textContent='أنت: '+seqLabel(d.seq);$('w-seq').style.display='inline-block';}
+        $('welcome').style.display='flex';
+        if(d.permMode==='gated'&&!d.permGranted&&!listenOnly){
+          $('waitingPerm').style.display='block';
+          $('gctrls').style.display='none';
         }
-      } else {
-        // Listener: just receive audio
-        $('guestControlsCard').style.display = 'none';
-        $('g-raise-btn').style.display = 'none';
-        startGuestListenerAudio();
       }
-
-      playAd('intro');
-    } else if (msg.type === 'perm_granted') {
-      $('waitingPermCard').style.display = 'none';
-      $('guestControlsCard').style.display = 'block';
-      toast('✅ منحك الهوست الإذن للتحدث!');
-      beep('granted');
-      startGuestAudio();
-    } else if (msg.type === 'perm_denied') {
-      toast('❌ رفض الهوست طلبك للتحدث');
-      if (participants['__me__']) participants['__me__'].raised = false;
-      raised = false;
-      $('g-raise-btn').textContent = '✋ طلب الكلام';
-      $('g-raise-btn').classList.remove('raise-on');
-    } else if (msg.type === 'participants') {
-      renderGuestParticipants(msg.list);
-    } else if (msg.type === 'mute') {
-      gMuted = msg.value;
-      if (stream) stream.getAudioTracks().forEach(t => t.enabled = !gMuted);
-      $('g-mic-btn').textContent = gMuted ? '🔇 مكتوم' : '🎙️ صوت';
-      $('g-mic-btn').classList.toggle('muted', gMuted);
-      toast(gMuted ? '🔇 أوقف الهوست ميكروفونك' : '🔈 أعاد الهوست تشغيل ميكروفونك');
-    } else if (msg.type === 'kick') {
-      toast('⚠️ أُزلت من الجلسة');
-      if (stream) stream.getTracks().forEach(t => t.stop());
-      if (peer) peer.destroy();
-      showRating();
-    } else if (msg.type === 'timer') {
-      timerSec = msg.sec; renderGuestTimer();
-    } else if (msg.type === 'full') {
-      toast('⚠️ الغرفة ممتلئة، جرب لاحقاً');
-      if (peer) peer.destroy();
-      go('home');
-    }
-  });
-
-  dc.on('close', () => { toast('انقطع الاتصال بالهوست'); showRating(); });
-  dc.on('error', () => { toast('خطأ في الاتصال بالجلسة'); go('home'); });
-}
-
-async function startGuestAudio() {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    const hostId = 'mawja-' + sessionCode;
-    const call = peer.call(hostId, stream);
-    calls[hostId] = call;
-    call.on('stream', s => {
-      let audio = document.getElementById('host-audio');
-      if (!audio) { audio = document.createElement('audio'); audio.id = 'host-audio'; audio.autoplay = true; document.body.appendChild(audio); }
-      audio.srcObject = s;
+      if(d.type==='mute'){gMuted=d.value;if(stream)stream.getAudioTracks().forEach(t=>t.enabled=!gMuted);$('gmc').textContent=gMuted?'🔇 مكتوم':'🎙️ صوت';$('gmc').classList.toggle('muted',gMuted);toast(gMuted?'المضيف كتم صوتك':'المضيف فتح صوتك');}
+      if(d.type==='allowed'){$('waitingPerm').style.display='none';$('gctrls').style.display='flex';playSound('allowed');toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on');}
+      if(d.type==='denied'){toast('رفض الهوست طلبك ❌')}
+      if(d.type==='kick'){toast('تم طردك من الجلسة');setTimeout(()=>leaveSession(),1000)}
+      if(d.type==='full'){toast('الغرفة ممتلئة، جرب لاحقاً ⚠️');peer.destroy();go('home');}
     });
-  } catch { toast('تعذر الوصول للميكروفون'); }
-}
+    hostConn.on('close',()=>{resetAds();showRating()});
+    hostConn.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
 
-async function startGuestListenerAudio() {
-  // Listener: call host to receive audio (send blank stream)
-  try {
-    const blank = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    blank.getAudioTracks().forEach(t => t.enabled = false);
-    stream = blank;
-    const hostId = 'mawja-' + sessionCode;
-    const call = peer.call(hostId, blank);
-    calls[hostId] = call;
-    call.on('stream', s => {
-      let audio = document.getElementById('host-audio');
-      if (!audio) { audio = document.createElement('audio'); audio.id = 'host-audio'; audio.autoplay = true; document.body.appendChild(audio); }
-      audio.srcObject = s;
-    });
-  } catch {}
-}
-
-function renderGuestParticipants(list) {
-  const el = $('g-participants');
-  el.innerHTML = '';
-  if (!list || list.length === 0) { el.innerHTML = '<p class="hint text-center" style="padding:.5rem">لا يوجد متحدثون بعد...</p>'; return; }
-  list.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'participant-row' + (p.speaking ? ' speaking' : '');
-    row.innerHTML = `
-      <div class="p-avatar ${p.isHost ? 'host' : ''}">${(p.name || '?')[0]}</div>
-      <div class="p-info">
-        <div class="p-name-row">
-          <span class="p-flag">${p.flag || '🌍'}</span>
-          <span class="p-name">${p.name}</span>
-          ${p.seq ? `<span class="p-seq">ضيف${p.seq}</span>` : (p.isHost ? '<span class="p-seq">هوست</span>' : '')}
-        </div>
-        <div class="p-role">${p.muted ? '🔇' : '🎙️'} ${p.role === 'listener' ? 'مستمع' : ''}</div>
-      </div>`;
-    el.appendChild(row);
+    if(!listenOnly){
+      const call=peer.call(pid,stream,{metadata:{name,listen:false}});
+      call.on('stream',rs=>{$('ra').srcObject=rs;showGuestScreen(code,name,false);});
+      call.on('close',()=>{resetAds();showRating()});
+      call.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
+    }else{showGuestScreen(code,name,true);toast('دخلت كمستمع 👂');}
   });
+  peer.on('error',e=>{const msg=e.type==='peer-unavailable'?'الجلسة غير موجودة أو انتهت':'خطأ: '+e.type;loading('تعذر الاتصال',msg);setTimeout(()=>go('join'),2500);});
+  peer.on('call',call=>{call.answer();call.on('stream',rs=>{$('ra').srcObject=rs});});
 }
 
-function renderGuestTimer() {
-  const m = Math.floor(timerSec / 60).toString().padStart(2, '0');
-  const s = (timerSec % 60).toString().padStart(2, '0');
-  $('g-timer').textContent = `${m}:${s}`;
-  $('g-timer-bar').classList.toggle('warn', timerSec <= 300 && timerSec > 0);
+function confirmMode(mode){
+  const name=$('mname').value.trim()||'ضيف';
+  $('modeSelect').style.display='none';
+  listenOnly=mode==='listen';
+  $('jcode').value=pendingCode;$('gname').value=name;setMode(mode);joinSession();
 }
 
-// ---- Timer ----
-function startTimer(minutes) {
-  timerSec = minutes * 60;
-  timerInt = setInterval(() => {
-    timerSec--;
-    const m = Math.floor(timerSec / 60).toString().padStart(2, '0');
-    const s = (timerSec % 60).toString().padStart(2, '0');
-    $('h-timer').textContent = `${m}:${s}`;
-    $('h-timer-bar').classList.toggle('warn', timerSec <= 300 && timerSec > 0);
-
-    // Broadcast timer to guests
-    Object.values(dataConns).forEach(dc => { try { dc.send({ type: 'timer', sec: timerSec }); } catch {} });
-
-    if (timerSec <= 0) { clearInterval(timerInt); endSession(); }
-  }, 1000);
+function showGuestScreen(code,name,listen){
+  $('gt').textContent='جلسة مباشرة';$('gm').textContent='كود: '+code;
+  $('gspkav').textContent=name[0].toUpperCase();
+  $('gspkname').textContent=listen?'أنت مستمع 👂':'متصل بالجلسة ✓';
+  $('gplist').innerHTML=`<div class="pitem"><div class="pav host">م</div><div class="pinfo"><div class="pname">المضيف</div><div class="pbadge">يتحدث</div></div></div>
+    <div class="pitem"><div class="pav ${listen?'listen':'guest'}">${name[0].toUpperCase()}</div><div class="pinfo"><div class="pname">${name} <span class="pflag">${myFlag}</span></div><div class="pbadge">${listen?'👂 مستمع':'🎙️ متحدث'}</div></div></div>`;
+  if(listen){$('gctrls').style.display='none';$('lctrls').style.display='flex';}
+  else{$('gctrls').style.display='flex';$('lctrls').style.display='none';}
+  go('guest');playAd('intro');
 }
 
-// ---- Controls ----
-function toggleMic() {
-  if (!stream) return;
-  gMuted = !gMuted;
-  stream.getAudioTracks().forEach(t => t.enabled = !gMuted);
-  $('g-mic-btn').textContent = gMuted ? '🔇 مكتوم' : '🎙️ صوت';
-  $('g-mic-btn').classList.toggle('muted', gMuted);
-}
+function closeWelcome(){$('welcome').style.display='none';}
+function toggleMute(){if(!stream)return;muted=!muted;stream.getAudioTracks().forEach(t=>t.enabled=!muted);const c=$('mc');c.textContent=muted?'🔇 مكتوم':'🎙️ صوت';c.classList.toggle('muted',muted);renderHostList();}
+function toggleGuestMute(){if(!stream)return;gMuted=!gMuted;stream.getAudioTracks().forEach(t=>t.enabled=!gMuted);const c=$('gmc');c.textContent=gMuted?'🔇 مكتوم':'🎙️ صوت';c.classList.toggle('muted',gMuted);}
+function toggleRaise(){raised=!raised;const c=$('rc');c.textContent=raised?'✋ بانتظار الدور':'✋ طلب الكلام';c.classList.toggle('raise-on',raised);if(hostConn&&hostConn.open)hostConn.send({type:'raise',value:raised,name:myName});}
 
-function toggleRaise() {
-  raised = !raised;
-  $('g-raise-btn').textContent = raised ? '✋ بانتظار الدور' : '✋ طلب الكلام';
-  $('g-raise-btn').classList.toggle('raise-on', raised);
-  if (hostConn && hostConn.open) hostConn.send({ type: 'raise', value: raised, name: myName });
-}
+function showRating(){clearInterval(timerInt);playAd('outro');setTimeout(()=>{$('ratingOverlay').style.display='flex'},3500);}
+function rateStar(n){selectedRating=n;const msgs=['😞 سيئة','😐 مقبولة','🙂 جيدة','😊 جيدة جداً','🌟 ممتازة!'];$('rating-msg').textContent=msgs[n-1];document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));}
+function submitRating(){if(!selectedRating){toast('اختر تقييماً ⭐');return}toast('شكراً على تقييمك 🙏');$('ratingOverlay').style.display='none';resetAds();go('home');}
+function skipRating(){$('ratingOverlay').style.display='none';resetAds();go('home');}
 
-function closeWelcome() {
-  $('welcomeOverlay').classList.remove('open');
-  welcomePending = false;
+function endSession(){
+  clearInterval(timerInt);resetAds();
+  Object.values(dataConns).forEach(dc=>{try{dc.send({type:'kick'})}catch(e){}});
+  Object.values(calls).forEach(c=>c.close());
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  if(peer)peer.destroy();
+  peer=null;stream=null;calls={};dataConns={};participants={};raiseQueue=[];pendingPermQueue=[];guestSeqCounter=0;isHost=false;
+  toast('انتهت الجلسة');go('home');
 }
-
-function showRating() {
-  clearInterval(timerInt);
-  window.speechSynthesis && window.speechSynthesis.cancel();
-  setTimeout(() => playAd('outro'), 200);
-  $('ratingOverlay').classList.add('open');
+function leaveSession(){
+  resetAds();if(stream)stream.getTracks().forEach(t=>t.stop());if(peer)peer.destroy();peer=null;stream=null;showRating();
 }
-
-function rateStar(n) {
-  selectedRating = n;
-  const msgs = ['😞 سيئة', '😐 مقبولة', '🙂 جيدة', '😊 جيدة جداً', '🌟 ممتازة!'];
-  $('rating-msg').textContent = msgs[n - 1];
-  document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('on', i < n));
-}
-
-function submitRating() {
-  if (!selectedRating) { toast('اختر تقييماً ⭐'); return; }
-  toast('شكراً على تقييمك 🙏');
-  $('ratingOverlay').classList.remove('open');
-  go('home');
-}
-function skipRating() { $('ratingOverlay').classList.remove('open'); go('home'); }
-
-function endSession() {
-  clearInterval(timerInt);
-  Object.values(dataConns).forEach(dc => { try { dc.send({ type: 'kick' }); } catch {} });
-  Object.values(calls).forEach(c => { try { c.close(); } catch {} });
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  if (peer) { try { peer.destroy(); } catch {} }
-  toast('انتهت الجلسة');
-  showRating();
-}
-
-function leaveSession() {
-  if (hostConn && hostConn.open) hostConn.send({ type: 'leave' });
-  Object.values(calls).forEach(c => { try { c.close(); } catch {} });
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  if (peer) { try { peer.destroy(); } catch {} }
-  showRating();
-}
-
-// ---- Share ----
-function copyLink() {
-  const val = $('shareLink').value;
-  navigator.clipboard.writeText(val).then(() => toast('تم نسخ الرابط 📋'));
-}
-function shareWA() {
-  const code = sessionCode;
-  const link = $('shareLink').value;
-  const text = `أنا في جلسة "${sessionTopic}" على موجة!\nالكود: ${code}\nرابط الانضمام: ${link}`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(text));
-}
-
-// ---- URL auto-join ----
-window.addEventListener('load', () => {
-  const j = new URLSearchParams(location.search).get('join');
-  if (j) {
-    const code = j.replace(/\D/g, '').slice(0, 6);
-    go('home'); $('jcode').value = code; toast('أدخل اسمك وانضم 👋');
-  }
-});
 </script>
 </body>
 </html>
