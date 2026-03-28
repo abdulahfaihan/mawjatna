@@ -267,6 +267,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
         <div class="slink" id="slink">—</div>
         <button class="cbtn" onclick="copyLink()">نسخ</button>
         <button class="wabtn" onclick="shareWa()">واتساب</button>
+        <button class="cbtn" onclick="shareMawja()">مشاركة ↗</button>
       </div>
     </div>
     <div class="qbox" id="qbox" style="display:none">
@@ -373,6 +374,63 @@ function mkCode(){return Math.floor(100000+Math.random()*900000).toString()}
 
 function copyLink(){navigator.clipboard.writeText(sessionLink).then(()=>toast('تم نسخ الرابط ✓'))}
 function shareWa(){window.open('https://wa.me/?text='+encodeURIComponent('انضم لجلستي على موجة 🎙️\nالكود: '+sessionCode+'\n'+sessionLink),'_blank')}
+
+function shareMawja(){
+  const text='انضم لجلستي على موجة 🎙️\nالكود: '+sessionCode+'\n'+sessionLink;
+  if(navigator.share){navigator.share({title:'موجة',text,url:sessionLink}).catch(()=>{})}
+  else{navigator.clipboard.writeText(text).then(()=>toast('تم نسخ رابط المشاركة ✓'))}
+}
+
+// ---- SOUND ENGINE ----
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+
+function playSound(type){
+  try{
+    const g=AC.createGain();g.connect(AC.destination);
+    if(type==='join'){
+      // نغمة دخول — موجتان تصاعديتان ناعمتان
+      [0,0.15].forEach((t,i)=>{
+        const o=AC.createOscillator();o.connect(g);
+        o.type='sine';
+        o.frequency.setValueAtTime(520+i*160,AC.currentTime+t);
+        o.frequency.exponentialRampToValueAtTime(680+i*160,AC.currentTime+t+0.18);
+        g.gain.setValueAtTime(0,AC.currentTime+t);
+        g.gain.linearRampToValueAtTime(0.18,AC.currentTime+t+0.05);
+        g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+t+0.25);
+        o.start(AC.currentTime+t);o.stop(AC.currentTime+t+0.28);
+      });
+    } else if(type==='raise'){
+      // نغمة طلب مايك — ثلاث نبضات خفيفة
+      [0,0.18,0.36].forEach((t)=>{
+        const o=AC.createOscillator();o.connect(g);
+        o.type='sine';o.frequency.value=880;
+        g.gain.setValueAtTime(0,AC.currentTime+t);
+        g.gain.linearRampToValueAtTime(0.15,AC.currentTime+t+0.04);
+        g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+t+0.14);
+        o.start(AC.currentTime+t);o.stop(AC.currentTime+t+0.16);
+      });
+    } else if(type==='leave'){
+      // نغمة مغادرة — تنازلية هادئة
+      const o=AC.createOscillator();o.connect(g);
+      o.type='sine';
+      o.frequency.setValueAtTime(520,AC.currentTime);
+      o.frequency.exponentialRampToValueAtTime(320,AC.currentTime+0.3);
+      g.gain.setValueAtTime(0.14,AC.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+0.35);
+      o.start(AC.currentTime);o.stop(AC.currentTime+0.38);
+    } else if(type==='allowed'){
+      // نغمة أعطيت الكلام — صاعدة مبهجة
+      [0,0.12,0.24].forEach((t,i)=>{
+        const o=AC.createOscillator();o.connect(g);
+        o.type='sine';o.frequency.value=[520,660,780][i];
+        g.gain.setValueAtTime(0,AC.currentTime+t);
+        g.gain.linearRampToValueAtTime(0.2,AC.currentTime+t+0.05);
+        g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+t+0.22);
+        o.start(AC.currentTime+t);o.stop(AC.currentTime+t+0.25);
+      });
+    }
+  }catch(e){}
+}
 
 function startTimer(min){
   const end=Date.now()+min*60000;
@@ -506,11 +564,12 @@ async function createSession(){
     call.on('stream',rs=>{
       if(!gListen){const a=document.createElement('audio');a.autoplay=true;a.srcObject=rs;a.id='aud-'+gId;document.body.appendChild(a)}
       addParticipant(gId,gName,gListen);
+      playSound('join');
       toast(gName+(gListen?' دخل مستمعاً 👂':' انضم 🎙️'));
       const dc2=dataConns[gId];
       if(dc2&&dc2.open)dc2.send({type:'welcome',topic,host:name});
     });
-    call.on('close',()=>{removeParticipant(gId);const a=$('aud-'+gId);if(a)a.remove();toast(gName+' غادر')});
+    call.on('close',()=>{removeParticipant(gId);const a=$('aud-'+gId);if(a)a.remove();playSound('leave');toast(gName+' غادر')});
     calls[gId]=call;
   });
   peer.on('connection',conn=>{
@@ -525,7 +584,7 @@ async function createSession(){
         else{raiseQueue=raiseQueue.filter(x=>x.id!==gId)}
         participants[gId].raised=d.value;
         renderQueue();renderHostList();
-        if(d.value)toast((participants[gId]?.name||'')+' يطلب الكلام ✋');
+        if(d.value){playSound('raise');toast((participants[gId]?.name||'')+' يطلب الكلام ✋')}
       }
     });
     conn.on('close',()=>{delete dataConns[gId]});
@@ -569,7 +628,7 @@ async function joinSession(){
         $('gmc').classList.toggle('muted',gMuted);
         toast(gMuted?'المضيف كتم صوتك':'المضيف فتح صوتك');
       }
-      if(d.type==='allowed'){toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on')}
+      if(d.type==='allowed'){playSound('allowed');toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on')}
       if(d.type==='kick'){toast('تم طردك من الجلسة');setTimeout(()=>{leaveSession()},1000)}
     });
   });
