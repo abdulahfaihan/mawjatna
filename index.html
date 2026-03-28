@@ -9,7 +9,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --teal:#1D9E75;--tl:#E1F5EE;--td:#0F6E56;--tm:#5DCAA5;
-  --amber:#EF9F27;--al:#FAEEDA;
+  --amber:#EF9F27;--al:#FAEEDA;--ad:#854F0B;
   --red:#E24B4A;--rl:#FCEBEB;
   --bg:#fff;--bg2:#f7f7f5;--bg3:#f0efe9;
   --tx:#1a1a18;--tx2:#6b6b68;--tx3:#9b9b98;
@@ -57,6 +57,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
 .btn{width:100%;padding:12px;border-radius:var(--rs);border:none;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:8px}
 .btn-p{background:var(--teal);color:#fff}.btn-p:hover{background:var(--td)}
 .btn-g{background:var(--bg2);color:var(--tx);border:.5px solid var(--bo2)}.btn-g:hover{background:var(--bg3)}
+.btn-wa{background:#25D366;color:#fff}.btn-wa:hover{background:#1da851}
 /* Loading */
 .lbox{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:2.5rem;text-align:center}
 .spin{width:40px;height:40px;border:3px solid var(--tl);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.2rem}
@@ -64,61 +65,98 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
 .lsub{font-size:13px;color:var(--tx2)}
 .lerr{color:var(--red);margin-top:10px;font-size:13px}
 /* Session */
-.sh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem}
+.sh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem}
 .stitle{font-size:18px;font-weight:600;line-height:1.3}
 .smeta{font-size:12px;color:var(--tx2);margin-top:4px}
 .lpill{display:flex;align-items:center;gap:5px;background:var(--tl);padding:4px 10px;border-radius:20px;flex-shrink:0}
 .ldot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite}
 .lpill span{font-size:11px;color:var(--td);font-weight:500}
-.wbox{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;text-align:center}
-.wlabel{font-size:13px;color:var(--tx2);margin-bottom:12px}
-.wbars{display:flex;align-items:center;justify-content:center;gap:3px;height:44px}
+/* Speaker card */
+.spkcard{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem;text-align:center}
+.spkav{width:52px;height:52px;border-radius:50%;background:var(--tl);color:var(--td);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;margin:0 auto 8px;border:2px solid var(--teal)}
+.spkname{font-size:14px;font-weight:500;margin-bottom:10px}
+.wbars{display:flex;align-items:center;justify-content:center;gap:3px;height:36px}
 .wb{width:4px;border-radius:2px;background:var(--teal);height:6px}
 .wbars.on .wb{animation:wb 1.1s ease-in-out infinite}
 .wb:nth-child(1){animation-delay:0s}.wb:nth-child(2){animation-delay:.1s}.wb:nth-child(3){animation-delay:.2s}
 .wb:nth-child(4){animation-delay:.3s}.wb:nth-child(5){animation-delay:.4s}.wb:nth-child(6){animation-delay:.3s}
 .wb:nth-child(7){animation-delay:.2s}.wb:nth-child(8){animation-delay:.1s}.wb:nth-child(9){animation-delay:0s}
-.sbox{background:var(--tl);border:.5px solid var(--tm);border-radius:var(--rs);padding:12px 14px;margin-bottom:1rem}
-.sbox p{font-size:12px;color:var(--td);margin-bottom:6px}
-.srow{display:flex;gap:6px;align-items:center}
+/* Code box */
+.codebox{background:var(--tl);border:.5px solid var(--tm);border-radius:var(--rs);padding:12px 14px;margin-bottom:1rem}
+.codebox p{font-size:12px;color:var(--td);margin-bottom:8px}
+.coderow{display:flex;gap:8px;align-items:center}
+.bigcode{font-size:28px;font-weight:700;letter-spacing:6px;color:var(--td);font-family:monospace;flex:1;text-align:center}
+.srow{display:flex;gap:6px;align-items:center;margin-top:8px}
 .slink{flex:1;font-size:11px;color:var(--td);background:#fff;padding:7px 10px;border-radius:var(--rs);border:.5px solid var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:monospace;direction:ltr}
-.cbtn{padding:7px 14px;background:var(--teal);color:#fff;border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit}
+.cbtn{padding:7px 12px;background:var(--teal);color:#fff;border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.wabtn{padding:7px 12px;background:#25D366;color:#fff;border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+/* Queue */
+.qbox{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--rs);padding:10px 14px;margin-bottom:1rem}
+.qlabel{font-size:12px;color:var(--tx3);margin-bottom:8px}
+.qlist{display:flex;flex-direction:column;gap:6px}
+.qitem{display:flex;align-items:center;gap:8px;font-size:13px}
+.qnum{width:20px;height:20px;border-radius:50%;background:var(--tl);color:var(--td);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qname{flex:1}
+.qallow{padding:4px 10px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+/* Participants */
 .plabel{font-size:12px;color:var(--tx3);margin-bottom:8px}
-/* Participants list with host controls */
 .plist{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
 .pitem{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--rs)}
 .pav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
 .pav.host{background:var(--tl);color:var(--td);border:2px solid var(--teal)}
 .pav.guest{background:var(--bg3);color:var(--tx2)}
-.pav.muted-av{opacity:.5}
+.pav.listen{background:var(--al);color:var(--ad)}
 .pname{flex:1;font-size:14px}
 .pbadge{font-size:10px;color:var(--tx3);margin-top:2px}
-.hcontrols{display:flex;gap:6px}
+.hbtns{display:flex;gap:5px}
 .hbtn{padding:5px 10px;border-radius:6px;border:none;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500}
-.hbtn.mute{background:var(--al);color:#854F0B}
+.hbtn.mute{background:var(--al);color:var(--ad)}
 .hbtn.kick{background:var(--rl);color:var(--red)}
-.timer{font-size:12px;color:var(--tx3);text-align:center;margin:8px 0}
-.timer span{color:var(--teal);font-weight:500}
+/* Timer */
+.timerbox{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--rs);padding:10px 14px;margin-bottom:1rem}
+.timerlabel{font-size:12px;color:var(--tx2)}
+.timerclock{font-size:18px;font-weight:600;color:var(--teal);font-family:monospace}
+.timerclock.warn{color:var(--red)}
+/* Controls */
 .ctrls{display:flex;gap:8px;margin-top:12px}
 .ctrl{flex:1;padding:10px;border-radius:var(--rs);border:.5px solid var(--bo2);background:var(--bg2);font-size:13px;color:var(--tx);cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
 .ctrl:hover{background:var(--bg3)}
-.ctrl.muted{background:var(--al);color:#854F0B;border-color:rgba(239,159,39,.4)}
+.ctrl.muted{background:var(--al);color:var(--ad);border-color:rgba(239,159,39,.4)}
 .ctrl.raise-on{background:var(--tl);color:var(--td);border-color:var(--tm)}
 .ctrl.leave{background:var(--rl);color:var(--red);border-color:rgba(226,75,74,.3)}
-.smsg{font-size:13px;color:var(--tx2);text-align:center;padding:8px}
-.smsg.err{color:var(--red)}
+.ctrl.listen-mode{background:var(--al);color:var(--ad)}
 /* Join */
 .jbox{background:var(--bg2);border:.5px solid var(--bo);border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem}
 .jbox p{font-size:13px;color:var(--tx2);margin-bottom:12px;text-align:center}
-.jrow{display:flex;gap:8px}
-.jrow input{flex:1;padding:10px 14px;font-size:14px;border:.5px solid var(--bo2);border-radius:var(--rs);background:var(--bg);color:var(--tx);font-family:inherit}
-.jrow input:focus{outline:none;border-color:var(--teal)}
-.jrow button{padding:10px 18px;background:var(--teal);color:#fff;border:none;border-radius:var(--rs);font-size:14px;cursor:pointer}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;transition:transform .3s;white-space:nowrap;z-index:100}
+.codeinput{width:100%;padding:14px;font-size:24px;font-weight:700;letter-spacing:8px;text-align:center;border:.5px solid var(--bo2);border-radius:var(--rs);background:var(--bg);color:var(--tx);font-family:monospace;margin-bottom:10px}
+.codeinput:focus{outline:none;border-color:var(--teal)}
+/* Welcome overlay */
+.welcome{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem}
+.welcome-card{background:var(--bg);border-radius:var(--r);padding:2rem;max-width:360px;width:100%;text-align:center}
+.welcome-icon{font-size:40px;margin-bottom:1rem}
+.welcome h2{font-size:20px;font-weight:600;margin-bottom:.5rem}
+.welcome p{font-size:14px;color:var(--tx2);line-height:1.6;margin-bottom:.5rem}
+.welcome-topic{background:var(--tl);color:var(--td);padding:10px 14px;border-radius:var(--rs);font-size:14px;font-weight:500;margin:1rem 0}
+.welcome-rules{text-align:right;font-size:13px;color:var(--tx2);margin-bottom:1.5rem;line-height:2}
+/* Rating */
+.rating-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem}
+.rating-card{background:var(--bg);border-radius:var(--r);padding:2rem;max-width:360px;width:100%;text-align:center}
+.rating-card h2{font-size:20px;font-weight:600;margin-bottom:.5rem}
+.rating-card p{font-size:14px;color:var(--tx2);margin-bottom:1.5rem}
+.stars{display:flex;justify-content:center;gap:10px;margin-bottom:1.5rem}
+.star{font-size:36px;cursor:pointer;transition:transform .1s;filter:grayscale(1)}
+.star.on{filter:grayscale(0)}
+.star:hover{transform:scale(1.2)}
+.rating-msg{font-size:13px;color:var(--tx2);margin-bottom:1rem;min-height:20px}
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;transition:transform .3s;white-space:nowrap;z-index:300}
 .toast.show{transform:translateX(-50%) translateY(0)}
+/* Warning banner */
+.warnbanner{background:var(--rl);border:.5px solid rgba(226,75,74,.3);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);text-align:center;margin-bottom:1rem;display:none}
+.warnbanner.show{display:block}
 @keyframes lw{0%,100%{opacity:.5}50%{opacity:1}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
-@keyframes wb{0%,100%{height:6px}50%{height:32px}}
+@keyframes wb{0%,100%{height:6px}50%{height:28px}}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -134,7 +172,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <div id="s-home" class="screen active">
     <div class="hero">
       <h1>سوالف الطريق<br>بدون فوضى</h1>
-      <p>افتح جلسة صوتية مؤقتة لأشخاص قليلين<br>تنتهي تلقائياً وما تترك أثر</p>
+      <p>جلسة صوتية مؤقتة — تنتهي تلقائياً وما تترك أثر</p>
     </div>
     <div class="acards">
       <div class="acard" onclick="go('create')">
@@ -143,7 +181,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
       </div>
       <div class="acard" onclick="go('join')">
         <div class="aicon j">🎧</div>
-        <div><h3>انضم لجلسة</h3><p>عندك رابط أو كود الجلسة</p></div>
+        <div><h3>انضم لجلسة</h3><p>عندك كود أو رابط الجلسة</p></div>
       </div>
     </div>
   </div>
@@ -192,10 +230,17 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <!-- JOIN -->
   <div id="s-join" class="screen">
     <div class="jbox">
-      <p>أدخل كود الجلسة أو الصق الرابط</p>
-      <div class="jrow"><input type="text" id="jcode" placeholder="mwj-abc-123" dir="ltr"><button onclick="joinSession()">انضم</button></div>
+      <p>أدخل الكود المكون من 6 أرقام</p>
+      <input type="text" class="codeinput" id="jcode" placeholder="000000" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+      <button class="btn btn-p" onclick="joinSession()">انضم للجلسة</button>
     </div>
     <div class="fld"><label>اسمك</label><input type="text" id="gname" placeholder="محمد" maxlength="20"></div>
+    <div class="fld"><label>طريقة المشاركة</label>
+      <div class="chips">
+        <div class="chip on" id="mode-talk" onclick="setMode('talk')">🎙️ متحدث</div>
+        <div class="chip" id="mode-listen" onclick="setMode('listen')">👂 مستمع فقط</div>
+      </div>
+    </div>
     <button class="btn btn-g" onclick="go('home')">رجوع</button>
   </div>
 
@@ -205,24 +250,35 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
       <div><div class="stitle" id="st">—</div><div class="smeta" id="sm">—</div></div>
       <div class="lpill"><div class="ldot"></div><span>مباشر</span></div>
     </div>
-    <div class="wbox">
-      <div class="wlabel" id="wl">أنت على الهواء 🎙️</div>
+    <div class="warnbanner" id="warnbanner">⚠️ الجلسة ستنتهي خلال 5 دقائق</div>
+    <div class="spkcard">
+      <div class="spkav" id="spkav">أ</div>
+      <div class="spkname" id="spkname">أنت تتحدث</div>
       <div class="wbars on" id="wv">
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
       </div>
     </div>
-    <div class="sbox">
-      <p>📎 شارك هذا الرابط مع من تريد</p>
+    <div class="codebox">
+      <p>🔢 كود الجلسة — شاركه مع من تريد</p>
+      <div class="coderow"><div class="bigcode" id="bigcode">——</div></div>
       <div class="srow">
-        <div class="slink" id="slink">جاري التحضير...</div>
+        <div class="slink" id="slink">—</div>
         <button class="cbtn" onclick="copyLink()">نسخ</button>
+        <button class="wabtn" onclick="shareWa()">واتساب</button>
       </div>
+    </div>
+    <div class="qbox" id="qbox" style="display:none">
+      <div class="qlabel">✋ طلبات الكلام</div>
+      <div class="qlist" id="qlist"></div>
+    </div>
+    <div class="timerbox">
+      <div class="timerlabel">ينتهي بعد</div>
+      <div class="timerclock" id="tclock">—</div>
     </div>
     <div class="plabel" id="plabel">المتحدثون (1)</div>
     <div class="plist" id="plist"></div>
-    <div class="timer">ينتهي بعد <span id="tclock">—</span></div>
     <div class="ctrls">
       <div class="ctrl" id="mc" onclick="toggleMute()">🎙️ صوت</div>
       <div class="ctrl leave" onclick="endSession()">إنهاء الجلسة</div>
@@ -235,22 +291,61 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
       <div><div class="stitle" id="gt">جلسة مباشرة</div><div class="smeta" id="gm"></div></div>
       <div class="lpill"><div class="ldot"></div><span>مباشر</span></div>
     </div>
-    <div class="wbox">
-      <div class="wlabel" id="gwl">متصل بالجلسة ✓</div>
+    <div class="spkcard">
+      <div class="spkav" id="gspkav">م</div>
+      <div class="spkname" id="gspkname">المضيف يتحدث</div>
       <div class="wbars on">
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
       </div>
     </div>
-    <div class="plabel">المتحدثون</div>
+    <div class="plabel">المشاركون</div>
     <div class="plist" id="gplist"></div>
-    <div class="ctrls">
+    <div class="ctrls" id="gctrls">
       <div class="ctrl" id="gmc" onclick="toggleGuestMute()">🎙️ صوت</div>
       <div class="ctrl" id="rc" onclick="toggleRaise()">✋ طلب الكلام</div>
       <div class="ctrl leave" onclick="leaveSession()">مغادرة</div>
     </div>
-    <div class="smsg" id="gmsg"></div>
+    <div class="ctrls" id="lctrls" style="display:none">
+      <div class="ctrl listen-mode">👂 وضع الاستماع</div>
+      <div class="ctrl leave" onclick="leaveSession()">مغادرة</div>
+    </div>
+  </div>
+</div>
+
+<!-- Welcome overlay -->
+<div class="welcome" id="welcome" style="display:none">
+  <div class="welcome-card">
+    <div class="welcome-icon">👋</div>
+    <h2 id="w-title">أهلاً بك في الجلسة</h2>
+    <p style="font-size:13px;color:var(--tx3);margin-bottom:8px">الموضوع</p>
+    <div class="welcome-topic" id="w-topic">—</div>
+    <div class="welcome-rules">
+      🎙️ اطلب الكلام قبل التحدث<br>
+      🔇 كن في مكان هادئ<br>
+      ⏱️ الجلسة مؤقتة وتنتهي تلقائياً<br>
+      🚫 لا تسجيل ولا أثر بعد الانتهاء
+    </div>
+    <button class="btn btn-p" onclick="closeWelcome()" style="margin-top:0">دخول الجلسة ✓</button>
+  </div>
+</div>
+
+<!-- Rating overlay -->
+<div class="rating-overlay" id="ratingOverlay" style="display:none">
+  <div class="rating-card">
+    <h2>كيف كانت الجلسة؟</h2>
+    <p>رأيك يساعدنا على التحسين</p>
+    <div class="stars" id="stars">
+      <span class="star" onclick="rateStar(1)">⭐</span>
+      <span class="star" onclick="rateStar(2)">⭐</span>
+      <span class="star" onclick="rateStar(3)">⭐</span>
+      <span class="star" onclick="rateStar(4)">⭐</span>
+      <span class="star" onclick="rateStar(5)">⭐</span>
+    </div>
+    <div class="rating-msg" id="rating-msg"></div>
+    <button class="btn btn-p" onclick="submitRating()" style="margin-top:0">إرسال التقييم</button>
+    <button class="btn btn-g" onclick="skipRating()">تخطي</button>
   </div>
 </div>
 
@@ -260,201 +355,248 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
 <script>
 const $=id=>document.getElementById(id);
 let peer=null,stream=null,calls={},dataConns={},isHost=false,muted=false,gMuted=false;
-let timerInt=null,myName='',hostConn=null,raised=false;
-let guestMuteState={};
+let timerInt=null,myName='',hostConn=null,raised=false,listenOnly=false;
+let guestMuteState={},participants={},raiseQueue=[];
+let selectedRating=0,sessionTopic='',sessionCode='',sessionLink='';
 
 function go(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('s-'+s).classList.add('active')}
-function pickChip(el){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
+function pickChip(el){document.querySelectorAll('#s-create .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
+function setMode(m){
+  listenOnly=m==='listen';
+  $('mode-talk').classList.toggle('on',!listenOnly);
+  $('mode-listen').classList.toggle('on',listenOnly);
+}
 function toast(msg,d=2500){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
 function loading(title,sub,err=''){$('ltitle').textContent=title;$('lsub').textContent=sub;$('lerr').textContent=err;go('loading')}
-function copyLink(){const l=$('slink').textContent;if(l.includes('..'))return;navigator.clipboard.writeText(l).then(()=>toast('تم نسخ الرابط ✓'))}
 
-function mkCode(){const c='abcdefghjkmnpqrstuvwxyz23456789';let r='';for(let i=0;i<6;i++)r+=c[Math.floor(Math.random()*c.length)];return'mwj-'+r.slice(0,3)+'-'+r.slice(3)}
+function mkCode(){return Math.floor(100000+Math.random()*900000).toString()}
+
+function copyLink(){navigator.clipboard.writeText(sessionLink).then(()=>toast('تم نسخ الرابط ✓'))}
+function shareWa(){window.open('https://wa.me/?text='+encodeURIComponent('انضم لجلستي على موجة 🎙️\nالكود: '+sessionCode+'\n'+sessionLink),'_blank')}
 
 function startTimer(min){
   const end=Date.now()+min*60000;
+  let warned=false;
   timerInt=setInterval(()=>{
     const r=end-Date.now();
-    if(r<=0){clearInterval(timerInt);$('tclock').textContent='انتهت';if(isHost)endSession();return}
+    if(r<=0){clearInterval(timerInt);$('tclock').textContent='انتهت';if(isHost)endSession();else showRating();return}
     const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);
-    $('tclock').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+    const disp=`${m}:${s.toString().padStart(2,'0')}`;
+    if($('tclock'))$('tclock').textContent=disp;
+    if(r<=300000&&!warned){warned=true;$('warnbanner').classList.add('show');toast('⚠️ الجلسة ستنتهي خلال 5 دقائق',4000)}
+    if(r<=60000&&$('tclock'))$('tclock').classList.add('warn');
   },1000);
 }
 
-async function getMic(){
-  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});return true}
-  catch(e){toast('تعذر الوصول للميكروفون ❌');return false}
+async function getMic(listen){
+  if(listen){stream=null;return true}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});
+    return true;
+  }catch(e){toast('تعذر الوصول للميكروفون ❌');return false}
 }
 
-// ---- HOST PARTICIPANT LIST ----
-let participants={};
+const ICE={iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
+]};
 
+// ---- HOST ----
 function renderHostList(){
-  const list=$('plist');
-  list.innerHTML='';
-  // Host row
-  const hostRow=document.createElement('div');
-  hostRow.className='pitem';
-  hostRow.innerHTML=`
-    <div class="pav host">${myName[0].toUpperCase()}</div>
+  const list=$('plist');list.innerHTML='';
+  const hr=document.createElement('div');hr.className='pitem';
+  hr.innerHTML=`<div class="pav host">${myName[0].toUpperCase()}</div>
     <div style="flex:1"><div class="pname">${myName}</div><div class="pbadge">أنت · المضيف</div></div>
-    <div class="hcontrols">
-      <div class="hbtn mute" onclick="toggleMute()" style="padding:5px 10px">${muted?'🔊 فتح':'🔇 كتم'}</div>
-    </div>`;
-  list.appendChild(hostRow);
-
+    <div class="hbtns"><div class="hbtn mute" onclick="toggleMute()">${muted?'🔊':'🔇'}</div></div>`;
+  list.appendChild(hr);
   Object.entries(participants).forEach(([id,p])=>{
-    const row=document.createElement('div');
-    row.className='pitem';row.id='pr-'+id;
+    const row=document.createElement('div');row.className='pitem';row.id='pr-'+id;
     const isMuted=guestMuteState[id]||false;
-    row.innerHTML=`
-      <div class="pav guest ${isMuted?'muted-av':''}">${p.name[0].toUpperCase()}</div>
-      <div style="flex:1"><div class="pname">${p.name}</div><div class="pbadge">${isMuted?'🔇 مكتوم':'🎙️ يستمع'}${p.raised?' · ✋ يطلب الكلام':''}</div></div>
-      <div class="hcontrols">
-        <button class="hbtn mute" onclick="muteGuest('${id}')">${isMuted?'فتح':'كتم'}</button>
+    const badge=p.listen?'👂 مستمع':(isMuted?'🔇 مكتوم':'🎙️ متحدث');
+    row.innerHTML=`<div class="pav ${p.listen?'listen':'guest'}">${p.name[0].toUpperCase()}</div>
+      <div style="flex:1"><div class="pname">${p.name}</div><div class="pbadge">${badge}</div></div>
+      <div class="hbtns">
+        ${!p.listen?`<button class="hbtn mute" onclick="muteGuest('${id}')">${isMuted?'فتح':'كتم'}</button>`:''}
         <button class="hbtn kick" onclick="kickGuest('${id}')">طرد</button>
       </div>`;
     list.appendChild(row);
   });
-  $('plabel').textContent=`المتحدثون (${Object.keys(participants).length+1})`;
+  $('plabel').textContent=`المشاركون (${Object.keys(participants).length+1})`;
+  updateSpkCard();
 }
 
-function addParticipant(id,name){participants[id]={name,raised:false};renderHostList()}
-function removeParticipant(id){delete participants[id];delete guestMuteState[id];renderHostList()}
+function updateSpkCard(){
+  if(!isHost)return;
+  if(muted){$('spkav').textContent='🔇';$('spkname').textContent='أنت مكتوم'}
+  else{$('spkav').textContent=myName[0].toUpperCase();$('spkname').textContent='أنت تتحدث'}
+}
+
+function renderQueue(){
+  if(raiseQueue.length===0){$('qbox').style.display='none';return}
+  $('qbox').style.display='block';
+  const ql=$('qlist');ql.innerHTML='';
+  raiseQueue.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='qitem';
+    d.innerHTML=`<div class="qnum">${i+1}</div><div class="qname">${item.name}</div>
+      <button class="qallow" onclick="allowSpeak('${item.id}')">أعطه الكلام</button>`;
+    ql.appendChild(d);
+  });
+}
+
+function allowSpeak(id){
+  const dc=dataConns[id];
+  if(dc&&dc.open)dc.send({type:'allowed'});
+  raiseQueue=raiseQueue.filter(x=>x.id!==id);
+  if(participants[id])participants[id].raised=false;
+  renderQueue();renderHostList();
+  toast('أعطيت الكلام لـ '+(participants[id]?.name||''));
+}
+
+function addParticipant(id,name,listen){
+  participants[id]={name,listen,raised:false};
+  renderHostList();
+}
+function removeParticipant(id){delete participants[id];delete guestMuteState[id];raiseQueue=raiseQueue.filter(x=>x.id!==id);renderHostList();renderQueue()}
 
 function muteGuest(id){
   guestMuteState[id]=!guestMuteState[id];
-  const dc=dataConns[id];
-  if(dc&&dc.open) dc.send({type:'mute',value:guestMuteState[id]});
-  renderHostList();
-  toast(participants[id]?.name+(guestMuteState[id]?' تم كتمه':' تم فتح صوته'));
+  const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'mute',value:guestMuteState[id]});
+  renderHostList();toast((participants[id]?.name||'')+(guestMuteState[id]?' تم كتمه':' تم فتح صوته'));
 }
-
 function kickGuest(id){
-  const dc=dataConns[id];
-  if(dc&&dc.open) dc.send({type:'kick'});
-  const c=calls[id];
-  if(c) c.close();
-  removeParticipant(id);
-  toast(participants[id]?.name+' تم طرده');
+  const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'kick'});
+  const c=calls[id];if(c)c.close();
+  toast((participants[id]?.name||'')+' تم طرده');removeParticipant(id);
 }
 
-// ---- CREATE SESSION ----
 async function createSession(){
   const name=$('hname').value.trim()||'المضيف';
   const topic=$('htopic').value.trim();
   const dest=$('hdest').value.trim();
   const dur=parseInt($('hdur').value);
   if(!topic){toast('أضف موضوع الجلسة ⚠️');return}
-  myName=name;isHost=true;
-  loading('جاري تجهيز الجلسة...','نطلب إذن الميكروفون');
-  if(!await getMic()){go('create');return}
+  myName=name;isHost=true;sessionTopic=topic;
+  loading('جاري التحضير...','نطلب إذن الميكروفون');
+  if(!await getMic(false)){go('create');return}
   loading('جاري الاتصال...','ننشئ الجلسة');
-  const sid=mkCode();
-  peer=new Peer(sid,{
-    host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
-    config:{iceServers:[
-      {urls:'stun:stun.l.google.com:19302'},
-      {urls:'stun:stun1.l.google.com:19302'},
-      {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
-      {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-      {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
-    ]}
-  });
+  const code=mkCode();sessionCode=code;
+  const pid='mwj'+code;
+  peer=new Peer(pid,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
   let opened=false;
   peer.on('open',id=>{
     opened=true;
-    const link=window.location.href.split('?')[0]+'?join='+id;
+    sessionLink=window.location.href.split('?')[0]+'?join='+code;
     $('st').textContent=topic;
     $('sm').textContent=dest?`${name} ← ${dest}`:name;
-    $('slink').textContent=link;
-    renderHostList();
-    startTimer(dur);
-    go('session');
-    toast('الجلسة مباشرة الآن 🎙️');
+    $('bigcode').textContent=code;
+    $('slink').textContent=sessionLink;
+    $('spkav').textContent=name[0].toUpperCase();
+    renderHostList();startTimer(dur);go('session');
+    toast('الجلسة مباشرة 🎙️');
   });
-  peer.on('error',e=>{
-    if(!opened){loading('فشل الاتصال',e.type==='unavailable-id'?'الكود مستخدم، حاول مجدداً':e.type,'حاول مرة أخرى');setTimeout(()=>go('create'),2500)}
-  });
+  peer.on('error',e=>{if(!opened){loading('فشل',e.type,'');setTimeout(()=>go('create'),2500)}});
   peer.on('call',call=>{
-    call.answer(stream);
+    call.answer(stream||undefined);
     const gName=call.metadata?.name||'ضيف';
+    const gListen=call.metadata?.listen||false;
     const gId=call.peer;
     call.on('stream',rs=>{
-      const a=document.createElement('audio');a.autoplay=true;a.srcObject=rs;a.id='aud-'+gId;document.body.appendChild(a);
-      addParticipant(gId,gName);
-      toast(gName+' انضم ✓');
+      if(!gListen){const a=document.createElement('audio');a.autoplay=true;a.srcObject=rs;a.id='aud-'+gId;document.body.appendChild(a)}
+      addParticipant(gId,gName,gListen);
+      toast(gName+(gListen?' دخل مستمعاً 👂':' انضم 🎙️'));
+      const dc2=dataConns[gId];
+      if(dc2&&dc2.open)dc2.send({type:'welcome',topic,host:name});
     });
     call.on('close',()=>{removeParticipant(gId);const a=$('aud-'+gId);if(a)a.remove();toast(gName+' غادر')});
     calls[gId]=call;
   });
   peer.on('connection',conn=>{
-    const gId=conn.peer;
-    dataConns[gId]=conn;
+    const gId=conn.peer;dataConns[gId]=conn;
+    conn.on('open',()=>{
+      const p=participants[gId];
+      if(p)conn.send({type:'welcome',topic,host:name});
+    });
     conn.on('data',d=>{
       if(d.type==='raise'&&participants[gId]){
+        if(d.value){raiseQueue.push({id:gId,name:participants[gId].name})}
+        else{raiseQueue=raiseQueue.filter(x=>x.id!==gId)}
         participants[gId].raised=d.value;
-        renderHostList();
-        if(d.value) toast((participants[gId]?.name||'ضيف')+' يطلب الكلام ✋');
+        renderQueue();renderHostList();
+        if(d.value)toast((participants[gId]?.name||'')+' يطلب الكلام ✋');
       }
     });
     conn.on('close',()=>{delete dataConns[gId]});
   });
 }
 
-// ---- JOIN SESSION ----
+// ---- GUEST ----
+let guestMode='talk';
 async function joinSession(){
   let code=$('jcode').value.trim();
   const name=$('gname').value.trim()||'ضيف';
-  if(!code){toast('أدخل كود الجلسة ⚠️');return}
+  if(!code||code.length<6){toast('أدخل الكود المكون من 6 أرقام ⚠️');return}
   if(code.includes('join='))code=code.split('join=').pop();
-  code=code.trim();
+  code=code.replace(/\D/g,'').slice(0,6);
   myName=name;
   loading('جاري التحضير...','نطلب إذن الميكروفون');
-  if(!await getMic()){go('join');return}
-  loading('جاري الاتصال بالجلسة...','نبحث عن المضيف');
-  peer=new Peer({
-    host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
-    config:{iceServers:[
-      {urls:'stun:stun.l.google.com:19302'},
-      {urls:'stun:stun1.l.google.com:19302'},
-      {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
-      {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-      {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
-    ]}
-  });
+  if(!await getMic(listenOnly)){go('join');return}
+  loading('جاري الاتصال...','نبحث عن الجلسة');
+  peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
   peer.on('open',()=>{
-    const call=peer.call(code,stream,{metadata:{name}});
-    call.on('stream',rs=>{
-      $('ra').srcObject=rs;
-      $('gt').textContent='جلسة مباشرة';
-      $('gm').textContent='متصل · '+code;
-      $('gplist').innerHTML=`
-        <div class="pitem"><div class="pav host">م</div><div style="flex:1"><div class="pname">المضيف</div><div class="pbadge">يتحدث</div></div></div>
-        <div class="pitem"><div class="pav guest">${name[0].toUpperCase()}</div><div style="flex:1"><div class="pname">${name}</div><div class="pbadge">أنت · مستمع</div></div></div>`;
-      go('guest');
-      toast('اتصلت بالجلسة ✓ 🎧');
-    });
-    call.on('close',()=>{toast('انتهت الجلسة');setTimeout(()=>go('home'),1500)});
-    call.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
-    hostConn=peer.connect(code);
+    const pid='mwj'+code;
+    if(!listenOnly){
+      const call=peer.call(pid,stream,{metadata:{name,listen:false}});
+      setupGuestCall(call,code,name,false);
+    } else {
+      const fakeStream=new MediaStream();
+      const call=peer.call(pid,fakeStream,{metadata:{name,listen:true}});
+      setupGuestCall(call,code,name,true);
+    }
+    hostConn=peer.connect(pid);
     hostConn.on('data',d=>{
+      if(d.type==='welcome'){
+        $('w-title').textContent='أهلاً '+(name||'بك')+' في الجلسة';
+        $('w-topic').textContent=d.topic||'—';
+        $('welcome').style.display='flex';
+      }
       if(d.type==='mute'){
         gMuted=d.value;
-        stream.getAudioTracks().forEach(t=>t.enabled=!gMuted);
+        if(stream)stream.getAudioTracks().forEach(t=>t.enabled=!gMuted);
         $('gmc').textContent=gMuted?'🔇 مكتوم':'🎙️ صوت';
         $('gmc').classList.toggle('muted',gMuted);
-        toast(gMuted?'قام المضيف بكتم صوتك':'قام المضيف بفتح صوتك');
+        toast(gMuted?'المضيف كتم صوتك':'المضيف فتح صوتك');
       }
-      if(d.type==='kick'){toast('تم طردك من الجلسة');setTimeout(()=>{leaveSession();go('home')},1000)}
+      if(d.type==='allowed'){toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on')}
+      if(d.type==='kick'){toast('تم طردك من الجلسة');setTimeout(()=>{leaveSession()},1000)}
     });
   });
   peer.on('error',e=>{
     const msg=e.type==='peer-unavailable'?'الجلسة غير موجودة أو انتهت':'خطأ: '+e.type;
-    loading('تعذر الاتصال',msg);
-    setTimeout(()=>go('join'),2500);
+    loading('تعذر الاتصال',msg);setTimeout(()=>go('join'),2500);
   });
 }
+
+function setupGuestCall(call,code,name,listen){
+  call.on('stream',rs=>{
+    $('ra').srcObject=rs;
+    $('gt').textContent='جلسة مباشرة';
+    $('gm').textContent='كود: '+code;
+    $('gspkav').textContent=name[0].toUpperCase();
+    $('gspkname').textContent=listen?'أنت مستمع 👂':'متصل بالجلسة ✓';
+    $('gplist').innerHTML=`
+      <div class="pitem"><div class="pav host">م</div><div style="flex:1"><div class="pname">المضيف</div><div class="pbadge">يتحدث</div></div></div>
+      <div class="pitem"><div class="pav ${listen?'listen':'guest'}">${name[0].toUpperCase()}</div><div style="flex:1"><div class="pname">${name}</div><div class="pbadge">${listen?'👂 مستمع':'🎙️ متحدث'}</div></div></div>`;
+    if(listen){$('gctrls').style.display='none';$('lctrls').style.display='flex'}
+    go('guest');toast('دخلت الجلسة ✓');
+  });
+  call.on('close',()=>{showRating()});
+  call.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
+}
+
+function closeWelcome(){$('welcome').style.display='none'}
 
 function toggleMute(){
   if(!stream)return;
@@ -474,22 +616,48 @@ function toggleRaise(){
   const c=$('rc');c.textContent=raised?'✋ بانتظار الدور':'✋ طلب الكلام';c.classList.toggle('raise-on',raised);
   if(hostConn&&hostConn.open)hostConn.send({type:'raise',value:raised,name:myName});
 }
+
+function showRating(){
+  clearInterval(timerInt);
+  $('ratingOverlay').style.display='flex';
+}
+
+function rateStar(n){
+  selectedRating=n;
+  const msgs=['😞 سيئة','😐 مقبولة','🙂 جيدة','😊 جيدة جداً','🌟 ممتازة!'];
+  $('rating-msg').textContent=msgs[n-1];
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));
+}
+
+function submitRating(){
+  if(!selectedRating){toast('اختر تقييماً ⭐');return}
+  toast('شكراً على تقييمك 🙏');
+  $('ratingOverlay').style.display='none';
+  go('home');
+}
+function skipRating(){$('ratingOverlay').style.display='none';go('home')}
+
 function endSession(){
   clearInterval(timerInt);
   Object.values(dataConns).forEach(dc=>{try{dc.send({type:'kick'})}catch(e){}});
   Object.values(calls).forEach(c=>c.close());
   if(stream)stream.getTracks().forEach(t=>t.stop());
   if(peer)peer.destroy();
-  go('home');toast('انتهت الجلسة');
+  toast('انتهت الجلسة');
+  go('home');
 }
 function leaveSession(){
   if(stream)stream.getTracks().forEach(t=>t.stop());
   if(peer)peer.destroy();
-  go('home');toast('غادرت الجلسة');
+  showRating();
 }
+
 window.addEventListener('load',()=>{
   const j=new URLSearchParams(location.search).get('join');
-  if(j){go('join');$('jcode').value=j;toast('أدخل اسمك وانضم 👋')}
+  if(j){
+    const code=j.replace(/\D/g,'').slice(0,6);
+    go('join');$('jcode').value=code;toast('أدخل اسمك وانضم 👋');
+  }
 });
 </script>
 </body>
