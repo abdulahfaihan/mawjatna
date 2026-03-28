@@ -373,7 +373,73 @@ function startTimer(min){const end=Date.now()+min*60000;let warned=false;timerIn
 
 async function getMic(listen){if(listen){stream=null;return{ok:true,forced:false}}try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});return{ok:true,forced:false}}catch(e){stream=null;toast('لا يوجد إذن للميكروفون — دخلت مستمعاً 👂',3500);return{ok:true,forced:true}}}
 
-const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}]};
+const ICE={iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:stun2.l.google.com:19302'},
+  {urls:'stun:stun3.l.google.com:19302'},
+  {urls:'stun:stun4.l.google.com:19302'},
+  {urls:'stun:global.stun.twilio.com:3478'},
+  {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:80?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
+]};
+
+// PeerJS server configs to try in order
+const PEER_SERVERS = [
+  {host:'0.peerjs.com',port:443,path:'/',secure:true},
+  {host:'peerjs.sdp.one',port:443,path:'/',secure:true},
+];
+
+async function initPeerWithFallback(peerId) {
+  return new Promise((resolve, reject) => {
+    let tried = 0;
+    function tryServer(cfg) {
+      const opts = {...cfg, debug:0, config:ICE};
+      const p = peerId
+        ? new Peer(peerId, opts)
+        : new Peer(opts);
+      let settled = false;
+      const t = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        try { p.destroy(); } catch(e) {}
+        tried++;
+        if (tried < PEER_SERVERS.length) {
+          tryServer(PEER_SERVERS[tried]);
+        } else {
+          reject(new Error('network'));
+        }
+      }, 8000);
+      p.on('open', id => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(t);
+        resolve(p);
+      });
+      p.on('error', e => {
+        if (settled) return;
+        clearTimeout(t);
+        if (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error' || e.type === 'socket-closed') {
+          settled = true;
+          try { p.destroy(); } catch(err) {}
+          tried++;
+          if (tried < PEER_SERVERS.length) {
+            tryServer(PEER_SERVERS[tried]);
+          } else {
+            reject(e);
+          }
+        } else {
+          settled = true;
+          clearTimeout(t);
+          resolve(p); // other errors (peer-unavailable etc) mean connected OK
+        }
+      });
+    }
+    tryServer(PEER_SERVERS[0]);
+  });
+}
 
 // ===== HOST =====
 function renderHostList(){
@@ -414,19 +480,19 @@ async function createSession(){
   myFlag=await detectCountry();
   loading('جاري التحضير...','نطلب إذن الميكروفون');
   const micRes=await getMic(false);if(!micRes.ok){go('create');return}
-  loading('جاري الاتصال...','ننشئ الجلسة');
   const code=mkCode();sessionCode=code;
-  peer=new Peer('mwj'+code,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
-  let opened=false;
-  peer.on('open',()=>{
-    opened=true;
-    sessionLink=window.location.href.split('?')[0]+'?join='+code;
-    $('st').textContent=topic;$('sm').textContent=dest?`${name} ← ${dest}`:name;
-    $('bigcode').textContent=code;$('slink').textContent=sessionLink;
-    renderHostList();startTimer(dur);go('session');
-    playAd('intro');toast('الجلسة مباشرة 🎙️');
-  });
-  peer.on('error',e=>{if(!opened){loading('فشل الاتصال',e.type,'');setTimeout(()=>go('create'),2500)}});
+  loading('جاري الاتصال...','نتصل بالخادم');
+  try { peer = await initPeerWithFallback('mwj'+code); } catch(e) {
+    loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
+    setTimeout(()=>go('create'),3000); return;
+  }
+  // Peer connected successfully - setup session
+  sessionLink=window.location.href.split('?')[0]+'?join='+code;
+  $('st').textContent=topic;$('sm').textContent=dest?`${name} ← ${dest}`:name;
+  $('bigcode').textContent=code;$('slink').textContent=sessionLink;
+  renderHostList();startTimer(dur);go('session');
+  playAd('intro');toast('الجلسة مباشرة 🎙️');
+  peer.on('error',e=>{toast('خطأ في الاتصال: '+e.type);});
   peer.on('call',call=>{
     call.answer(stream||undefined);const gId=call.peer;
     call.on('stream',rs=>{if(!participants[gId]?.listen){const a=document.createElement('audio');a.autoplay=true;a.srcObject=rs;a.id='aud-'+gId;document.body.appendChild(a)}});
@@ -468,10 +534,12 @@ async function joinSession(){
   loading('جاري التحضير...','نطلب إذن الميكروفون');
   const micR=await getMic(listenOnly);if(!micR.ok){go('join');return}
   if(micR.forced)listenOnly=true;
-  loading('جاري الاتصال...','نبحث عن الجلسة');
-  peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
-  peer.on('open',()=>{
-    const pid='mwj'+code;
+  try { peer = await initPeerWithFallback(undefined); } catch(e) {
+    loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
+    setTimeout(()=>go('join'),3000); return;
+  }
+  // Peer connected - now connect to host
+  const pid='mwj'+code;
     hostConn=peer.connect(pid);
     hostConn.on('open',()=>{hostConn.send({type:'hello',name,listen:listenOnly,flag:myFlag});});
     hostConn.on('data',d=>{
@@ -495,7 +563,6 @@ async function joinSession(){
       call.on('close',()=>{stopAd();playAd('outro');});
       call.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
     }else{showGuestScreen(code,name,true);toast('دخلت كمستمع 👂');}
-  });
   peer.on('error',e=>{const msg=e.type==='peer-unavailable'?'الجلسة غير موجودة أو انتهت':'خطأ: '+e.type;loading('تعذر الاتصال',msg);setTimeout(()=>go('join'),2500);});
   peer.on('call',call=>{call.answer();call.on('stream',rs=>{$('ra').srcObject=rs});});
 }
