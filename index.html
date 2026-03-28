@@ -244,6 +244,32 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
     <button class="btn btn-g" onclick="go('home')">رجوع</button>
   </div>
 
+  <!-- MODE SELECT OVERLAY — يظهر عند فتح الرابط مباشرة -->
+  <div class="welcome" id="modeSelect" style="display:none">
+    <div class="welcome-card">
+      <div class="welcome-icon">🎙️</div>
+      <h2>كيف تريد الدخول؟</h2>
+      <p style="font-size:13px;color:var(--tx2);margin-bottom:1.5rem">اختر طريقة مشاركتك في الجلسة</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem">
+        <div class="acard" style="cursor:pointer" onclick="confirmMode('talk')">
+          <div class="aicon b" style="font-size:24px">🎙️</div>
+          <div>
+            <h3>متحدث</h3>
+            <p>تشارك بصوتك في الجلسة</p>
+          </div>
+        </div>
+        <div class="acard" style="cursor:pointer" onclick="confirmMode('listen')">
+          <div class="aicon j" style="font-size:24px">👂</div>
+          <div>
+            <h3>مستمع فقط</h3>
+            <p>تستمع بدون مشاركة بالصوت</p>
+          </div>
+        </div>
+      </div>
+      <div class="fld"><label>اسمك</label><input type="text" id="mname" placeholder="محمد" maxlength="20" style="background:var(--bg2)"></div>
+    </div>
+  </div>
+
   <!-- HOST SESSION -->
   <div id="s-session" class="screen">
     <div class="sh">
@@ -447,11 +473,15 @@ function startTimer(min){
 }
 
 async function getMic(listen){
-  if(listen){stream=null;return true}
+  if(listen){stream=null;return {ok:true,forced:false}}
   try{
     stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});
-    return true;
-  }catch(e){toast('تعذر الوصول للميكروفون ❌');return false}
+    return {ok:true,forced:false}
+  }catch(e){
+    stream=null;
+    toast('لا يوجد إذن للميكروفون — دخلت مستمعاً 👂',3500);
+    return {ok:true,forced:true}
+  }
 }
 
 const ICE={iceServers:[
@@ -538,7 +568,7 @@ async function createSession(){
   if(!topic){toast('أضف موضوع الجلسة ⚠️');return}
   myName=name;isHost=true;sessionTopic=topic;
   loading('جاري التحضير...','نطلب إذن الميكروفون');
-  if(!await getMic(false)){go('create');return}
+  const micRes=await getMic(false);if(!micRes.ok){go('create');return}
   loading('جاري الاتصال...','ننشئ الجلسة');
   const code=mkCode();sessionCode=code;
   const pid='mwj'+code;
@@ -601,7 +631,9 @@ async function joinSession(){
   code=code.replace(/\D/g,'').slice(0,6);
   myName=name;
   loading('جاري التحضير...','نطلب إذن الميكروفون');
-  if(!await getMic(listenOnly)){go('join');return}
+  const micR=await getMic(listenOnly);if(!micR.ok){go('join');return}
+  const forcedListen=micR.forced;
+  if(forcedListen)listenOnly=true;
   loading('جاري الاتصال...','نبحث عن الجلسة');
   peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
   peer.on('open',()=>{
@@ -715,9 +747,24 @@ window.addEventListener('load',()=>{
   const j=new URLSearchParams(location.search).get('join');
   if(j){
     const code=j.replace(/\D/g,'').slice(0,6);
-    go('join');$('jcode').value=code;toast('أدخل اسمك وانضم 👋');
+    // فتح الرابط مباشرة — أظهر شاشة الاختيار فوراً
+    go('home');
+    pendingCode=code;
+    $('modeSelect').style.display='flex';
   }
 });
+
+let pendingCode='';
+function confirmMode(mode){
+  const name=$('mname').value.trim()||'ضيف';
+  $('modeSelect').style.display='none';
+  listenOnly=mode==='listen';
+  // ملء بيانات شاشة الانضمام والانضمام مباشرة
+  $('jcode').value=pendingCode;
+  $('gname').value=name;
+  setMode(mode);
+  joinSession();
+}
 </script>
 </body>
 </html>
