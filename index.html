@@ -407,7 +407,36 @@ function shareMawja(){
   else{navigator.clipboard.writeText(text).then(()=>toast('تم نسخ رابط المشاركة ✓'))}
 }
 
-// ---- SOUND ENGINE ----
+// ---- إعلان صوتي ----
+function playAd(type){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+
+  const introText = 'أهلاً بك في موجة. هذه الرسالة برعاية موجة للجلسات الصوتية. يمكنك إضافة إعلانك الصوتي هنا، وسيسمعه أكثر من ثلاثة ملايين مستمع. موجة، سوالف الطريق بدون فوضى.';
+  const outroText  = 'شكراً لاستخدامك موجة. هذه الرسالة برعاية موجة للجلسات الصوتية. يمكنك إضافة إعلانك الصوتي هنا، وسيسمعه أكثر من ثلاثة ملايين مستمع. إلى اللقاء.';
+
+  const msg = new SpeechSynthesisUtterance(type==='intro'?introText:outroText);
+  msg.lang = 'ar-SA';
+  msg.rate = 0.92;
+  msg.pitch = 1.15;
+  msg.volume = 1;
+
+  // اختر أفضل صوت عربي متاح
+  const voices = window.speechSynthesis.getVoices();
+  const arVoice = voices.find(v=>v.lang==='ar-SA'&&v.name.toLowerCase().includes('female'))
+    || voices.find(v=>v.lang==='ar-SA')
+    || voices.find(v=>v.lang.startsWith('ar'))
+    || null;
+  if(arVoice) msg.voice = arVoice;
+
+  window.speechSynthesis.speak(msg);
+}
+
+// تحميل الأصوات مسبقاً
+if(window.speechSynthesis){
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+}
 const AC=new (window.AudioContext||window.webkitAudioContext)();
 
 function playSound(type){
@@ -715,7 +744,10 @@ function showGuestScreen(code,name,listen){
   go('guest');
 }
 
-function closeWelcome(){$('welcome').style.display='none'}
+function closeWelcome(){
+  $('welcome').style.display='none';
+  playAd('intro');
+}
 
 function toggleMute(){
   if(!stream)return;
@@ -738,7 +770,8 @@ function toggleRaise(){
 
 function showRating(){
   clearInterval(timerInt);
-  $('ratingOverlay').style.display='flex';
+  playAd('outro');
+  setTimeout(()=>{$('ratingOverlay').style.display='flex'},3500);
 }
 
 function rateStar(n){
