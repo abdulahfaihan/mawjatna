@@ -151,12 +151,12 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <div class="logo">
     <div class="logo-icon"><div class="lw"><span></span><span></span><span></span><span></span><span></span></div></div>
     <div class="logo-name">مو<span>جة</span></div>
-    <div class="logo-tag">v3.5.2 · جلسات صوتية مؤقتة</div>
+    <div class="logo-tag">v3.5.3 · جلسات صوتية مؤقتة</div>
   </div>
   <!-- HOME -->
   <div id="s-home" class="screen active">
     <div class="hero-v2">
-      <div class="hero-badge">v3.5.2 — آخر تحديث</div>
+      <div class="hero-badge">v3.5.3 — آخر تحديث</div>
       <h1 class="hero-h">افتح موجتك<br><span class="hero-accent">وسمّعنا إبداعك</span></h1>
       <p class="hero-sub">جلسة صوتية مؤقتة تنتهي تلقائياً ولا تترك أثر — ابدأ في ثوانٍ</p>
     </div>
@@ -187,7 +187,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
         <div class="review-card"><div class="review-top"><div class="review-av" style="background:#FCE4EC;color:#880E4F">ر</div><div><div class="review-name">ريم الدوسري</div><div class="review-stars">★★★★★</div></div></div><div class="review-text">استخدمناه في الفريق أثناء العمل، الكود يشتغل في ثواني والصوت واضح</div></div>
       </div>
     </div>
-    <div class="home-footer">موجة · v3.5.2 · <span id="live-count">—</span> جلسة نشطة الآن</div>
+    <div class="home-footer">موجة · v3.5.3 · <span id="live-count">—</span> جلسة نشطة الآن</div>
   </div>
   <!-- CREATE -->
   <div id="s-create" class="screen">
@@ -343,13 +343,27 @@ function initLiveCount(){const base=Math.floor(Math.random()*40)+12,el=$('live-c
 
 window.addEventListener('load',()=>{
   initCounters();initLiveCount();
-  const params=new URLSearchParams(location.search);
-  const j=params.get('join');
-  const pid=params.get('pid');
-  if(j){
-    pendingCode=j.replace(/\D/g,'').slice(0,6);
-    pendingPid=pid||''; // URLSearchParams already decodes — no extra decode needed
-    loadGuestName(); // pre-fill name if saved
+  const search=location.search;
+  const params=new URLSearchParams(search);
+  // New single-param format: ?j=CODE:PEERID (no & — safe for WhatsApp)
+  const jParam=params.get('j');
+  // Old format backward compat: ?join=CODE&pid=UUID
+  const joinParam=params.get('join');
+  const pidParam=params.get('pid');
+  let code='',pid='';
+  if(jParam){
+    const sep=jParam.indexOf(':');
+    if(sep>0){code=jParam.slice(0,sep).replace(/\D/g,'').slice(0,6);pid=jParam.slice(sep+1);}
+    else{code=jParam.replace(/\D/g,'').slice(0,6);}
+  } else if(joinParam){
+    code=joinParam.replace(/\D/g,'').slice(0,6);
+    // Old &pid= may have been double-encoded by WhatsApp — try to extract from raw search
+    if(pidParam){pid=pidParam;}
+    else{const m=search.match(/[?&]pid=([^&]+)/);if(m)pid=decodeURIComponent(m[1]);}
+  }
+  if(code){
+    pendingCode=code;pendingPid=pid;
+    loadGuestName();
     $('modeSelect').style.display='flex';
   }
 });
@@ -479,7 +493,7 @@ async function createSession(){
   // Use PeerJS-assigned random ID — no collision ever
   hostPeerId=peer.id;
   const code=mkCode();sessionCode=code;
-  sessionLink=window.location.href.split('?')[0]+'?join='+code+'&pid='+encodeURIComponent(hostPeerId);
+  sessionLink=window.location.href.split('?')[0]+'?j='+code+':'+hostPeerId; // single param — no & for WhatsApp
   $('st').textContent=topic;$('sm').textContent=name;
   $('bigcode').textContent=code;$('slink').textContent=sessionLink;
   renderHostList();startTimer(dur);go('session');
@@ -538,7 +552,7 @@ async function joinSession(){
     setTimeout(()=>go('join'),3000);return;
   }
   // FIX: pendingPid already decoded — no extra decodeURIComponent
-  const hostId=pendingPid||new URLSearchParams(location.search).get('pid')||'';
+  const hostId=pendingPid||''; // already set in window.onload
   if(!hostId){loading('خطأ','الرابط غير صحيح، اطلب رابطاً جديداً من المضيف','❌ لا يوجد معرّف للجلسة');setTimeout(()=>go('join'),3000);return;}
 
   // Timeout: show error only after 18s (give ICE negotiation time)
@@ -582,7 +596,7 @@ async function joinSession(){
     if(d.type==='allowed'){$('waitingPerm').style.display='none';$('gctrls').style.display='flex';playSound('allowed');toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on');}
     if(d.type==='denied'){toast('رفض الهوست طلبك ❌');}
     if(d.type==='kick'){toast('تم طردك من الجلسة');stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();closePage();},300);}
-    if(d.type==='full'){toast('الغرفة ممتلئة ⚠️');stopAd();setTimeout(async()=>{await fullCleanup();try{window.close();}catch{};},800);}
+    if(d.type==='full'){toast('الغرفة ممتلئة ⚠️');stopAd();setTimeout(async()=>{await fullCleanup();closePage();},800);}
   });
   hostConn.on('close',()=>{toast('انقطع الاتصال بالمضيف');stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();closePage();},300);});
   hostConn.on('error',()=>{clearTimeout(connTimeout);loading('تعذر الاتصال','الجلسة غير موجودة أو انتهت');setTimeout(()=>go('join'),3000);});
@@ -614,10 +628,14 @@ function toggleGuestMute(){if(!stream)return;gMuted=!gMuted;stream.getAudioTrack
 function toggleRaise(){raised=!raised;const c=$('rc');c.textContent=raised?'✋ بانتظار الدور':'✋ طلب الكلام';c.classList.toggle('raise-on',raised);if(hostConn&&hostConn.open)hostConn.send({type:'raise',value:raised,name:myName});}
 
 function closePage(){
-  // Wait for outro ad to finish then close, fallback after 8s
-  const fallback=setTimeout(()=>{try{window.close();}catch{}},8000);
-  if(adAudio){adAudio.onended=()=>{clearTimeout(fallback);try{window.close();}catch{}};}
-  else{clearTimeout(fallback);setTimeout(()=>{try{window.close();}catch{}},300);}
+  // Play outro ad then redirect to home — ensures session is fully closed
+  const goHome=()=>{
+    try{window.location.href=window.location.href.split('?')[0];}
+    catch(e){go('home');}
+  };
+  const fallback=setTimeout(goHome,8000);
+  if(adAudio){adAudio.onended=()=>{clearTimeout(fallback);goHome()};}
+  else{clearTimeout(fallback);setTimeout(goHome,300);}
 }
 function endSession(){
   Object.values(dataConns).forEach(dc=>{try{dc.send({type:'kick'});}catch{}});
