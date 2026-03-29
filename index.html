@@ -169,7 +169,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
     </div>
     <div class="acards">
       <div class="acard" onclick="go('create');loadSavedName()"><div class="aicon b">📡</div><div class="acard-text"><h3>ابدأ جلسة</h3><p>أنت المذيع — حدد الموضوع والوقت</p></div><div class="acard-arrow">←</div></div>
-      <div class="acard" onclick="go('join')"><div class="aicon j">🎧</div><div class="acard-text"><h3>انضم لجلسة</h3><p>عندك كود أو رابط الجلسة</p></div><div class="acard-arrow">←</div></div>
+      <div class="acard" onclick="go('join');loadGuestName()"><div class="aicon j">🎧</div><div class="acard-text"><h3>انضم لجلسة</h3><p>عندك كود أو رابط الجلسة</p></div><div class="acard-arrow">←</div></div>
     </div>
     <div class="features-strip">
       <div class="feat-item"><span class="feat-ic">⚡</span>فوري بدون تسجيل</div><div class="feat-sep">·</div>
@@ -218,7 +218,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
       <input type="text" class="codeinput" id="jcode" placeholder="000000" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
       <button class="btn btn-p" onclick="joinSession()">انضم للجلسة</button>
     </div>
-    <div class="fld"><label>اسمك</label><input type="text" id="gname" placeholder="محمد" maxlength="20"></div>
+    <div class="fld"><label>اسمك <span style="color:var(--red);font-size:11px">*مطلوب</span></label><input type="text" id="gname" placeholder="اكتب اسمك..." maxlength="20" oninput="localStorage.setItem('mwj_guest_name',this.value.trim())"></div>
     <div class="fld"><label>طريقة المشاركة</label><div class="chips"><div class="chip on" id="mode-talk" onclick="setMode('talk')">🎙️ متحدث</div><div class="chip" id="mode-listen" onclick="setMode('listen')">👂 مستمع فقط</div></div></div>
     <button class="btn btn-g" onclick="go('home')">رجوع</button>
   </div>
@@ -231,7 +231,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
         <div class="acard" style="cursor:pointer;animation:none;opacity:1" onclick="confirmMode('talk')"><div class="aicon b" style="font-size:24px">🎙️</div><div><h3>متحدث</h3><p>تشارك بصوتك</p></div></div>
         <div class="acard" style="cursor:pointer;animation:none;opacity:1" onclick="confirmMode('listen')"><div class="aicon j" style="font-size:24px">👂</div><div><h3>مستمع فقط</h3><p>تستمع بدون مشاركة</p></div></div>
       </div>
-      <div class="fld"><label>اسمك</label><input type="text" id="mname" placeholder="محمد" maxlength="20" style="background:var(--bg2)"></div>
+      <div class="fld"><label>اسمك <span style="color:var(--red);font-size:11px">*مطلوب</span></label><input type="text" id="mname" placeholder="اكتب اسمك للدخول..." maxlength="20" style="background:var(--bg2)"><div id="mname-err" style="font-size:11px;color:var(--red);margin-top:4px;display:none">⚠️ الاسم مطلوب للدخول</div></div>
     </div>
   </div>
   <!-- HOST SESSION -->
@@ -348,7 +348,8 @@ window.addEventListener('load',()=>{
   const pid=params.get('pid');
   if(j){
     pendingCode=j.replace(/\D/g,'').slice(0,6);
-    pendingPid=pid?decodeURIComponent(pid):'';
+    pendingPid=pid||''; // URLSearchParams already decodes — no extra decode needed
+    loadGuestName(); // pre-fill name if saved
     $('modeSelect').style.display='flex';
   }
 });
@@ -372,6 +373,7 @@ function pickPerm(mode){permMode=mode;$('po-free').classList.toggle('on',mode===
 function saveHostName(v){if(v.trim())localStorage.setItem('mwj_host_name',v.trim());}
 function validateName(el){const v=el.value.trim();if(!v){el.style.borderColor='var(--red)';$('hname-err').style.display='block';}else{el.style.borderColor='var(--teal)';$('hname-err').style.display='none';}}
 function loadSavedName(){const saved=localStorage.getItem('mwj_host_name');if(saved&&$('hname')&&!$('hname').value){$('hname').value=saved;$('hname').style.borderColor='var(--teal)';}}
+function loadGuestName(){const saved=localStorage.getItem('mwj_guest_name');if(saved){if($('gname')&&!$('gname').value)$('gname').value=saved;if($('mname')&&!$('mname').value)$('mname').value=saved;}}
 function setMode(m){listenOnly=m==='listen';$('mode-talk').classList.toggle('on',!listenOnly);$('mode-listen').classList.toggle('on',listenOnly);}
 function copyLink(){navigator.clipboard.writeText(sessionLink).then(()=>toast('تم نسخ الرابط ✓'));}
 function shareWa(){window.open('https://wa.me/?text='+encodeURIComponent('انضم لجلستي على موجة 🎙️\nالكود: '+sessionCode+'\n'+sessionLink),'_blank');}
@@ -516,9 +518,13 @@ async function createSession(){
 
 // ===== JOIN SESSION =====
 async function joinSession(){
-  let code=$('jcode').value.trim();const name=$('gname').value.trim()||'ضيف';
+  let code=$('jcode').value.trim();
+  const name=$('gname').value.trim();
+  if(!name){toast('✋ اكتب اسمك أولاً قبل الدخول');$('gname').focus();return;}
   if(!code||code.length<6){toast('أدخل الكود المكون من 6 أرقام ⚠️');return;}
-  code=code.replace(/\D/g,'').slice(0,6);myName=name;
+  code=code.replace(/\D/g,'').slice(0,6);
+  myName=name;
+  localStorage.setItem('mwj_guest_name',name);
   loading('جاري التحضير...','إنهاء أي جلسة سابقة...');
   await fullCleanup();
   loading('جاري التحضير...','نكتشف موقعك');
@@ -531,12 +537,40 @@ async function joinSession(){
     loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
     setTimeout(()=>go('join'),3000);return;
   }
-  // Use pid from URL if available (real host peer ID), otherwise code only (old links)
-  const pid=pendingPid||new URLSearchParams(location.search).get('pid');
-  const hostId=pid?decodeURIComponent(pid):'';
+  // FIX: pendingPid already decoded — no extra decodeURIComponent
+  const hostId=pendingPid||new URLSearchParams(location.search).get('pid')||'';
   if(!hostId){loading('خطأ','الرابط غير صحيح، اطلب رابطاً جديداً من المضيف','❌ لا يوجد معرّف للجلسة');setTimeout(()=>go('join'),3000);return;}
+
+  // Timeout: show error only after 18s (give ICE negotiation time)
+  let connected=false;
+  const connTimeout=setTimeout(()=>{
+    if(!connected){loading('تعذر الاتصال','الجلسة غير موجودة أو انتهت');setTimeout(()=>go('join'),3000);}
+  },18000);
+
+  // FIX: peer-unavailable is transient — retry silently, don't fail immediately
+  let unavailRetries=0;
+  peer.on('error',e=>{
+    if(e.type==='peer-unavailable'){
+      unavailRetries++;
+      if(unavailRetries<=2){loading('جاري إعادة المحاولة...','الاتصال بالجلسة...');return;}
+    }
+    clearTimeout(connTimeout);
+    loading('خطأ في الاتصال','تأكد من الإنترنت','❌ '+e.type);
+    setTimeout(()=>go('join'),3000);
+  });
+
+  // FIX: start audio INSIDE DataChannel open — prevents race condition
   hostConn=peer.connect(hostId,{reliable:true});
-  hostConn.on('open',()=>{hostConn.send({type:'hello',name,listen:listenOnly,flag:myFlag});});
+  hostConn.on('open',()=>{
+    connected=true;clearTimeout(connTimeout);
+    hostConn.send({type:'hello',name,listen:listenOnly,flag:myFlag});
+    if(!listenOnly&&stream){
+      const call=peer.call(hostId,stream);
+      call.on('stream',rs=>{$('ra').srcObject=rs;showGuestScreen(code,name,false);});
+      call.on('close',()=>{stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();closePage();},300);});
+      call.on('error',()=>{/* non-fatal if data channel works */});
+    }else if(listenOnly){showGuestScreen(code,name,true);toast('دخلت كمستمع 👂');}
+  });
   hostConn.on('data',d=>{
     if(d.type==='welcome'){
       $('w-flag').textContent=myFlag;$('w-title').textContent='أهلاً '+name+' في الجلسة';$('w-topic').textContent=d.topic||'—';
@@ -551,19 +585,15 @@ async function joinSession(){
     if(d.type==='full'){toast('الغرفة ممتلئة ⚠️');stopAd();setTimeout(async()=>{await fullCleanup();try{window.close();}catch{};},800);}
   });
   hostConn.on('close',()=>{toast('انقطع الاتصال بالمضيف');stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();closePage();},300);});
-  hostConn.on('error',()=>{loading('تعذر الاتصال','الجلسة غير موجودة أو انتهت');setTimeout(()=>go('join'),2500);});
-  peer.on('error',e=>{const msg=e.type==='peer-unavailable'?'الجلسة غير موجودة أو انتهت':'خطأ: '+e.type;loading('تعذر الاتصال',msg);setTimeout(()=>go('join'),2500);});
-  peer.on('call',call=>{call.answer();call.on('stream',rs=>{$('ra').srcObject=rs;});});
-  if(!listenOnly){
-    const call=peer.call(hostId,stream);
-    call.on('stream',rs=>{$('ra').srcObject=rs;showGuestScreen(code,name,false);});
-    call.on('close',()=>{stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();},500);});
-    call.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500);});
-  }else{showGuestScreen(code,name,true);toast('دخلت كمستمع 👂');}
+  hostConn.on('error',()=>{clearTimeout(connTimeout);loading('تعذر الاتصال','الجلسة غير موجودة أو انتهت');setTimeout(()=>go('join'),3000);});
+  peer.on('call',call=>{call.answer(stream||undefined);call.on('stream',rs=>{$('ra').srcObject=rs;if(listenOnly)showGuestScreen(code,name,true);});});
 }
 
 function confirmMode(mode){
-  const name=$('mname').value.trim()||'ضيف';
+  const name=$('mname').value.trim();
+  if(!name){$('mname').style.borderColor='var(--red)';$('mname-err').style.display='block';$('mname').focus();return;}
+  $('mname').style.borderColor='';$('mname-err').style.display='none';
+  localStorage.setItem('mwj_guest_name',name);
   $('modeSelect').style.display='none';
   listenOnly=mode==='listen';
   $('jcode').value=pendingCode;$('gname').value=name;
