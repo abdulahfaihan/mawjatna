@@ -157,13 +157,13 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <div id="s-home" class="screen active">
     <div class="hero-v2">
       <div class="hero-badge">v3.5.2 — آخر تحديث</div>
-      <h1 class="hero-h">سوالف الطريق<br><span class="hero-accent">بدون فوضى</span></h1>
+      <h1 class="hero-h">افتح موجتك<br><span class="hero-accent">وسمّعنا إبداعك</span></h1>
       <p class="hero-sub">جلسة صوتية مؤقتة تنتهي تلقائياً ولا تترك أثر — ابدأ في ثوانٍ</p>
     </div>
     <div class="stats-row">
-      <div class="stat-item"><div class="stat-num" data-target="3100000">0</div><div class="stat-label">مستمع</div></div>
+      <div class="stat-item"><div class="stat-num" data-target="820">0</div><div class="stat-label">ألف مستمع</div></div>
       <div class="stat-div"></div>
-      <div class="stat-item"><div class="stat-num" data-target="20500000">0</div><div class="stat-label">جلسة صوتية</div></div>
+      <div class="stat-item"><div class="stat-num" data-target="4700">0</div><div class="stat-label">ألف جلسة</div></div>
       <div class="stat-div"></div>
       <div class="stat-item"><div class="stat-num" data-target="98">0</div><div class="stat-label">% رضا</div></div>
     </div>
@@ -198,7 +198,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
       <div class="fld"><label>الوجهة</label><input type="text" id="hdest" placeholder="الرياض" maxlength="20"></div>
       <div class="fld"><label>المدة</label><select id="hdur"><option value="30">30 دقيقة</option><option value="60" selected>ساعة</option><option value="120">ساعتين</option><option value="180">3 ساعات</option></select></div>
     </div>
-    <div class="fld"><label>حالتك</label><div class="chips"><div class="chip on" onclick="pickChip(this)">مسافر</div><div class="chip" onclick="pickChip(this)">في المكتب</div><div class="chip" onclick="pickChip(this)">وقت حر</div><div class="chip" onclick="pickChip(this)">في الانتظار</div></div></div>
+    <div class="fld"><label>حالتك</label><div class="chips"><div class="chip on" onclick="pickChip(this)">مسافر</div><div class="chip" onclick="pickChip(this)">في المكتب</div><div class="chip" onclick="pickChip(this)">وقت حر</div><div class="chip" onclick="pickChip(this)">في الانتظار</div><div class="chip" onclick="pickChip(this)">🎮 Gaming</div></div></div>
     <div class="fld"><label>الحد الأقصى للمتحدثين</label><div class="size-chips"><div class="size-chip" data-sz="3" onclick="pickSize(3)">3</div><div class="size-chip on" data-sz="5" onclick="pickSize(5)">5</div><div class="size-chip" data-sz="10" onclick="pickSize(10)">10</div></div></div>
     <div class="fld">
       <label>صلاحية التحدث للضيوف</label>
@@ -335,7 +335,7 @@ function seqLabel(n){return n?`ضيف${n}`:'';}
 function nextSeq(){return++guestSeqCounter;}
 
 // ===== HOME =====
-function formatNum(n){if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+' مليون';if(n>=1000)return(n/1000).toFixed(0)+' ألف';return n+'';}
+function formatNum(n){if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+' مليون';if(n>=1000)return(n/1000).toFixed(1).replace('.0','')+' ألف';return n+'';}
 function animateCounter(el){const target=+el.dataset.target,dur=1600,start=performance.now();function step(now){const p=Math.min((now-start)/dur,1),ease=1-Math.pow(1-p,3);el.textContent=formatNum(Math.round(ease*target));if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
 function initCounters(){document.querySelectorAll('.stat-num').forEach(el=>{const obs=new IntersectionObserver(entries=>{if(entries[0].isIntersecting){animateCounter(el);obs.disconnect();}},{threshold:.3});obs.observe(el);});}
 function initLiveCount(){const base=Math.floor(Math.random()*40)+12,el=$('live-count');if(el)el.textContent=base;setInterval(()=>{if(!el)return;const d=Math.random()<.5?1:-1,c=parseInt(el.textContent)||base;el.textContent=Math.max(5,c+d);},7000);}
