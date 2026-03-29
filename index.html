@@ -168,7 +168,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
       <div class="stat-item"><div class="stat-num" data-target="98">0</div><div class="stat-label">% رضا</div></div>
     </div>
     <div class="acards">
-      <div class="acard" onclick="go('create')"><div class="aicon b">📡</div><div class="acard-text"><h3>ابدأ جلسة</h3><p>أنت المذيع — حدد الموضوع والوقت</p></div><div class="acard-arrow">←</div></div>
+      <div class="acard" onclick="go('create');loadSavedName()"><div class="aicon b">📡</div><div class="acard-text"><h3>ابدأ جلسة</h3><p>أنت المذيع — حدد الموضوع والوقت</p></div><div class="acard-arrow">←</div></div>
       <div class="acard" onclick="go('join')"><div class="aicon j">🎧</div><div class="acard-text"><h3>انضم لجلسة</h3><p>عندك كود أو رابط الجلسة</p></div><div class="acard-arrow">←</div></div>
     </div>
     <div class="features-strip">
@@ -192,13 +192,14 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <!-- CREATE -->
   <div id="s-create" class="screen">
     <div class="fl">بيانات الجلسة</div>
-    <div class="fld"><label>اسمك</label><input type="text" id="hname" placeholder="عبدالله" maxlength="20"></div>
-    <div class="fld"><label>موضوع الجلسة</label><textarea id="htopic" placeholder="مثال: ريادة الأعمال وأخطاء البداية"></textarea></div>
-    <div class="frow">
-      <div class="fld"><label>الوجهة</label><input type="text" id="hdest" placeholder="الرياض" maxlength="20"></div>
-      <div class="fld"><label>المدة</label><select id="hdur"><option value="30">30 دقيقة</option><option value="60" selected>ساعة</option><option value="120">ساعتين</option><option value="180">3 ساعات</option></select></div>
+    <div class="fld">
+      <label>اسمك <span style="color:var(--red);font-size:11px">*مطلوب</span></label>
+      <input type="text" id="hname" placeholder="اكتب اسمك..." maxlength="20" oninput="saveHostName(this.value)" style="border-color:var(--bo2)" onfocus="this.style.borderColor='var(--teal)'" onblur="validateName(this)">
+      <div id="hname-err" style="font-size:11px;color:var(--red);margin-top:4px;display:none">⚠️ الاسم مطلوب قبل بدء الجلسة</div>
     </div>
-    <div class="fld"><label>حالتك</label><div class="chips"><div class="chip on" onclick="pickChip(this)">مسافر</div><div class="chip" onclick="pickChip(this)">في المكتب</div><div class="chip" onclick="pickChip(this)">وقت حر</div><div class="chip" onclick="pickChip(this)">في الانتظار</div><div class="chip" onclick="pickChip(this)">🎮 Gaming</div></div></div>
+    <div class="fld"><label>موضوع الجلسة</label><textarea id="htopic" placeholder="مثال: ريادة الأعمال وأخطاء البداية"></textarea></div>
+    <div class="fld"><label>المدة</label><select id="hdur"><option value="30">30 دقيقة</option><option value="60" selected>ساعة</option><option value="120">ساعتين</option><option value="180">3 ساعات</option></select></div>
+    <div class="fld"><label>حالتك</label><div class="chips"><div class="chip on" onclick="pickChip(this)">🚗 مسافر</div><div class="chip" onclick="pickChip(this)">💼 في المكتب</div><div class="chip" onclick="pickChip(this)">☕ وقت حر</div><div class="chip" onclick="pickChip(this)">⏳ في الانتظار</div><div class="chip" onclick="pickChip(this)">🎮 Gaming</div><div class="chip" onclick="pickChip(this)">🎙️ بودكاست</div><div class="chip" onclick="pickChip(this)">💼 مقابلة وظيفية</div><div class="chip" onclick="pickChip(this)">⚡ اجتماع سريع</div></div></div>
     <div class="fld"><label>الحد الأقصى للمتحدثين</label><div class="size-chips"><div class="size-chip" data-sz="3" onclick="pickSize(3)">3</div><div class="size-chip on" data-sz="5" onclick="pickSize(5)">5</div><div class="size-chip" data-sz="10" onclick="pickSize(10)">10</div></div></div>
     <div class="fld">
       <label>صلاحية التحدث للضيوف</label>
@@ -368,6 +369,9 @@ function countryToFlag(code){if(!code||code.length!==2)return'🌍';try{return S
 function pickChip(el){document.querySelectorAll('#s-create .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
 function pickSize(n){roomMaxSize=n;document.querySelectorAll('.size-chip').forEach(c=>c.classList.toggle('on',+c.dataset.sz===n));}
 function pickPerm(mode){permMode=mode;$('po-free').classList.toggle('on',mode==='free');$('po-gated').classList.toggle('on',mode==='gated');$('perm-hint').textContent=mode==='free'?'الضيوف يتحدثون فور دخولهم مباشرة':'الهوست يمنح الإذن لكل ضيف قبل التحدث';}
+function saveHostName(v){if(v.trim())localStorage.setItem('mwj_host_name',v.trim());}
+function validateName(el){const v=el.value.trim();if(!v){el.style.borderColor='var(--red)';$('hname-err').style.display='block';}else{el.style.borderColor='var(--teal)';$('hname-err').style.display='none';}}
+function loadSavedName(){const saved=localStorage.getItem('mwj_host_name');if(saved&&$('hname')&&!$('hname').value){$('hname').value=saved;$('hname').style.borderColor='var(--teal)';}}
 function setMode(m){listenOnly=m==='listen';$('mode-talk').classList.toggle('on',!listenOnly);$('mode-listen').classList.toggle('on',listenOnly);}
 function copyLink(){navigator.clipboard.writeText(sessionLink).then(()=>toast('تم نسخ الرابط ✓'));}
 function shareWa(){window.open('https://wa.me/?text='+encodeURIComponent('انضم لجلستي على موجة 🎙️\nالكود: '+sessionCode+'\n'+sessionLink),'_blank');}
@@ -451,11 +455,13 @@ function kickGuest(id){const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'kick
 
 // ===== CREATE SESSION =====
 async function createSession(){
-  const name=$('hname').value.trim()||'المضيف';
+  const name=$('hname').value.trim();
   const topic=$('htopic').value.trim();
-  const dest=$('hdest').value.trim();
   const dur=parseInt($('hdur').value);
+  if(!name){$('hname-err').style.display='block';$('hname').focus();$('hname').style.borderColor='var(--red)';return;}
   if(!topic){toast('أضف موضوع الجلسة ⚠️');return;}
+  $('hname-err').style.display='none';
+  localStorage.setItem('mwj_host_name', name);
   myName=name;isHost=true;sessionTopic=topic;
   loading('جاري التحضير...','إنهاء أي جلسة سابقة...');
   await fullCleanup();
@@ -472,7 +478,7 @@ async function createSession(){
   hostPeerId=peer.id;
   const code=mkCode();sessionCode=code;
   sessionLink=window.location.href.split('?')[0]+'?join='+code+'&pid='+encodeURIComponent(hostPeerId);
-  $('st').textContent=topic;$('sm').textContent=dest?`${name} ← ${dest}`:name;
+  $('st').textContent=topic;$('sm').textContent=name;
   $('bigcode').textContent=code;$('slink').textContent=sessionLink;
   renderHostList();startTimer(dur);go('session');
   playAd('intro');toast('الجلسة مباشرة 🎙️');
