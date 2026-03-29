@@ -151,12 +151,12 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <div class="logo">
     <div class="logo-icon"><div class="lw"><span></span><span></span><span></span><span></span><span></span></div></div>
     <div class="logo-name">مو<span>جة</span></div>
-    <div class="logo-tag">v3.5.1 · جلسات صوتية مؤقتة</div>
+    <div class="logo-tag">v3.5.2 · جلسات صوتية مؤقتة</div>
   </div>
   <!-- HOME -->
   <div id="s-home" class="screen active">
     <div class="hero-v2">
-      <div class="hero-badge">v3.5.1 — آخر تحديث</div>
+      <div class="hero-badge">v3.5.2 — آخر تحديث</div>
       <h1 class="hero-h">سوالف الطريق<br><span class="hero-accent">بدون فوضى</span></h1>
       <p class="hero-sub">جلسة صوتية مؤقتة تنتهي تلقائياً ولا تترك أثر — ابدأ في ثوانٍ</p>
     </div>
@@ -187,7 +187,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
         <div class="review-card"><div class="review-top"><div class="review-av" style="background:#FCE4EC;color:#880E4F">ر</div><div><div class="review-name">ريم الدوسري</div><div class="review-stars">★★★★★</div></div></div><div class="review-text">استخدمناه في الفريق أثناء العمل، الكود يشتغل في ثواني والصوت واضح</div></div>
       </div>
     </div>
-    <div class="home-footer">موجة · v3.5.1 · <span id="live-count">—</span> جلسة نشطة الآن</div>
+    <div class="home-footer">موجة · v3.5.2 · <span id="live-count">—</span> جلسة نشطة الآن</div>
   </div>
   <!-- CREATE -->
   <div id="s-create" class="screen">
@@ -379,7 +379,7 @@ const AC=new(window.AudioContext||window.webkitAudioContext)();
 function playSound(type){try{const g=AC.createGain();g.connect(AC.destination);if(type==='join'){[0,.15].forEach((t,i)=>{const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.setValueAtTime(520+i*160,AC.currentTime+t);o.frequency.exponentialRampToValueAtTime(680+i*160,AC.currentTime+t+.18);g.gain.setValueAtTime(0,AC.currentTime+t);g.gain.linearRampToValueAtTime(.18,AC.currentTime+t+.05);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+t+.25);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+.28);});}else if(type==='raise'){[0,.18,.36].forEach(t=>{const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(0,AC.currentTime+t);g.gain.linearRampToValueAtTime(.15,AC.currentTime+t+.04);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+t+.14);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+.16);});}else if(type==='leave'){const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.setValueAtTime(520,AC.currentTime);o.frequency.exponentialRampToValueAtTime(320,AC.currentTime+.3);g.gain.setValueAtTime(.14,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.35);o.start(AC.currentTime);o.stop(AC.currentTime+.38);}else if(type==='allowed'){[0,.12,.24].forEach((t,i)=>{const o=AC.createOscillator();o.connect(g);o.type='sine';o.frequency.value=[520,660,780][i];g.gain.setValueAtTime(0,AC.currentTime+t);g.gain.linearRampToValueAtTime(.2,AC.currentTime+t+.05);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+t+.22);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+.25);});}}catch(e){}}
 
 // ===== TIMER =====
-function startTimer(min){const end=Date.now()+min*60000;let warned=false;timerInt=setInterval(()=>{const r=end-Date.now();if(r<=0){clearInterval(timerInt);if($('tclock'))$('tclock').textContent='انتهت';if(isHost)endSession();else{stopAd();playAd('outro');}return;}const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);if($('tclock'))$('tclock').textContent=`${m}:${s.toString().padStart(2,'0')}`;if(r<=300000&&!warned){warned=true;if($('warnbanner'))$('warnbanner').classList.add('show');toast('⚠️ الجلسة ستنتهي خلال 5 دقائق',4000);}if(r<=60000&&$('tclock'))$('tclock').classList.add('warn');},1000);}
+function startTimer(min){const end=Date.now()+min*60000;let warned=false;timerInt=setInterval(()=>{const r=end-Date.now();if(r<=0){clearInterval(timerInt);if($('tclock'))$('tclock').textContent='انتهت';if(isHost)endSession();else{stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();closePage();},300);}return;}const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);if($('tclock'))$('tclock').textContent=`${m}:${s.toString().padStart(2,'0')}`;if(r<=300000&&!warned){warned=true;if($('warnbanner'))$('warnbanner').classList.add('show');toast('⚠️ الجلسة ستنتهي خلال 5 دقائق',4000);}if(r<=60000&&$('tclock'))$('tclock').classList.add('warn');},1000);}
 
 // ===== MIC =====
 async function getMic(listen){if(listen){stream=null;return{ok:true,forced:false};}try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});return{ok:true,forced:false};}catch(e){stream=null;toast('لا يوجد إذن للميكروفون — دخلت مستمعاً 👂',3500);return{ok:true,forced:true};}}
@@ -541,10 +541,10 @@ async function joinSession(){
     if(d.type==='mute'){gMuted=d.value;if(stream)stream.getAudioTracks().forEach(t=>t.enabled=!gMuted);$('gmc').textContent=gMuted?'🔇 مكتوم':'🎙️ صوت';$('gmc').classList.toggle('muted',gMuted);toast(gMuted?'المضيف كتم صوتك':'المضيف فتح صوتك');}
     if(d.type==='allowed'){$('waitingPerm').style.display='none';$('gctrls').style.display='flex';playSound('allowed');toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on');}
     if(d.type==='denied'){toast('رفض الهوست طلبك ❌');}
-    if(d.type==='kick'){toast('تم طردك من الجلسة');stopAd();setTimeout(async()=>{await fullCleanup();go('home');},800);}
-    if(d.type==='full'){toast('الغرفة ممتلئة ⚠️');stopAd();setTimeout(async()=>{await fullCleanup();go('home');},800);}
+    if(d.type==='kick'){toast('تم طردك من الجلسة');stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();closePage();},300);}
+    if(d.type==='full'){toast('الغرفة ممتلئة ⚠️');stopAd();setTimeout(async()=>{await fullCleanup();try{window.close();}catch{};},800);}
   });
-  hostConn.on('close',()=>{toast('انقطع الاتصال بالمضيف');stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();},500);});
+  hostConn.on('close',()=>{toast('انقطع الاتصال بالمضيف');stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();closePage();},300);});
   hostConn.on('error',()=>{loading('تعذر الاتصال','الجلسة غير موجودة أو انتهت');setTimeout(()=>go('join'),2500);});
   peer.on('error',e=>{const msg=e.type==='peer-unavailable'?'الجلسة غير موجودة أو انتهت':'خطأ: '+e.type;loading('تعذر الاتصال',msg);setTimeout(()=>go('join'),2500);});
   peer.on('call',call=>{call.answer();call.on('stream',rs=>{$('ra').srcObject=rs;});});
@@ -577,15 +577,21 @@ function toggleMute(){if(!stream)return;muted=!muted;stream.getAudioTracks().for
 function toggleGuestMute(){if(!stream)return;gMuted=!gMuted;stream.getAudioTracks().forEach(t=>t.enabled=!gMuted);const c=$('gmc');c.textContent=gMuted?'🔇 مكتوم':'🎙️ صوت';c.classList.toggle('muted',gMuted);}
 function toggleRaise(){raised=!raised;const c=$('rc');c.textContent=raised?'✋ بانتظار الدور':'✋ طلب الكلام';c.classList.toggle('raise-on',raised);if(hostConn&&hostConn.open)hostConn.send({type:'raise',value:raised,name:myName});}
 
+function closePage(){
+  // Wait for outro ad to finish then close, fallback after 8s
+  const fallback=setTimeout(()=>{try{window.close();}catch{}},8000);
+  if(adAudio){adAudio.onended=()=>{clearTimeout(fallback);try{window.close();}catch{}};}
+  else{clearTimeout(fallback);setTimeout(()=>{try{window.close();}catch{}},300);}
+}
 function endSession(){
   Object.values(dataConns).forEach(dc=>{try{dc.send({type:'kick'});}catch{}});
   stopAd();playAd('outro');
-  setTimeout(async()=>{await fullCleanup();},300);
+  setTimeout(async()=>{await fullCleanup();closePage();},300);
 }
 function leaveSession(){
   if(hostConn&&hostConn.open)hostConn.send({type:'leave'});
   stopAd();playAd('outro');
-  setTimeout(async()=>{await fullCleanup();},300);
+  setTimeout(async()=>{await fullCleanup();closePage();},300);
 }
 </script>
 </body>
