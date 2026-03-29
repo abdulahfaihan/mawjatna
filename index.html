@@ -324,6 +324,37 @@ let guestMuteState={},participants={},raiseQueue=[],pendingPermQueue=[];
 let selectedRating=0,sessionTopic='',sessionCode='',sessionLink='';
 let roomMaxSize=5,permMode='free',guestSeqCounter=0,pendingCode='';
 
+// ===== FULL CLEANUP before any new session =====
+async function fullCleanup() {
+  clearInterval(timerInt); timerInt=null;
+  stopAd(); resetAds();
+  // close all media
+  Object.values(calls).forEach(c=>{try{c.close()}catch{}});
+  Object.values(dataConns).forEach(dc=>{try{dc.close()}catch{}});
+  if(hostConn){try{hostConn.close()}catch{}} hostConn=null;
+  if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
+  // destroy peer and wait for it to fully close
+  if(peer){
+    try{ peer.destroy(); }catch{}
+    await new Promise(r=>setTimeout(r,800)); // wait for server to release the ID
+    peer=null;
+  }
+  // remove all injected audio elements
+  document.querySelectorAll('audio[id^="aud-"]').forEach(a=>a.remove());
+  // reset all state
+  calls={}; dataConns={}; participants={}; raiseQueue=[]; pendingPermQueue=[];
+  guestMuteState={}; guestSeqCounter=0; isHost=false; muted=false; gMuted=false;
+  raised=false; listenOnly=false; selectedRating=0;
+  sessionTopic=''; sessionCode=''; sessionLink='';
+  // reset UI
+  const wb=$('warnbanner'); if(wb)wb.classList.remove('show');
+  const tc=$('tclock'); if(tc){tc.textContent='—';tc.classList.remove('warn');}
+  const pb=$('permBanner'); if(pb)pb.classList.remove('show');
+  const qb=$('qbox'); if(qb)qb.style.display='none';
+  if($('welcome'))$('welcome').style.display='none';
+  if($('waitingPerm'))$('waitingPerm').style.display='none';
+}
+
 const $=id=>document.getElementById(id);
 function go(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('s-'+s).classList.add('active')}
 function toast(msg,d=2500){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
@@ -392,9 +423,10 @@ const PEER_SERVERS = [
   {host:'peerjs.sdp.one',port:443,path:'/',secure:true},
 ];
 
-async function initPeerWithFallback(peerId) {
+async function initPeerWithFallback(initialPeerId) {
   return new Promise((resolve, reject) => {
     let tried = 0;
+    let peerId = initialPeerId; // mutable so server-error can change it
     function tryServer(cfg) {
       const opts = {...cfg, debug:0, config:ICE};
       const p = peerId
@@ -424,6 +456,16 @@ async function initPeerWithFallback(peerId) {
         if (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error' || e.type === 'socket-closed') {
           settled = true;
           try { p.destroy(); } catch(err) {}
+          // On server-error with a fixed peerId, try with a new random ID suffix
+          if (e.type === 'server-error' && peerId) {
+            const newId = peerId.replace(/x[a-z0-9]+$/, '') + 'x' + Math.random().toString(36).slice(2,7);
+            peerId = newId;
+            setTimeout(() => {
+              tried = 0;
+              tryServer(PEER_SERVERS[0]);
+            }, 1000);
+            return;
+          }
           tried++;
           if (tried < PEER_SERVERS.length) {
             tryServer(PEER_SERVERS[tried]);
@@ -475,19 +517,25 @@ function kickGuest(id){const dc=dataConns[id];if(dc&&dc.open)dc.send({type:'kick
 async function createSession(){
   const name=$('hname').value.trim()||'المضيف',topic=$('htopic').value.trim(),dest=$('hdest').value.trim(),dur=parseInt($('hdur').value);
   if(!topic){toast('أضف موضوع الجلسة ⚠️');return}
+  // Cleanup any previous session first
+  loading('جاري التحضير...','إنهاء الجلسة السابقة...');
+  await fullCleanup();
   myName=name;isHost=true;sessionTopic=topic;
   loading('جاري التحضير...','نكتشف موقعك');
   myFlag=await detectCountry();
   loading('جاري التحضير...','نطلب إذن الميكروفون');
   const micRes=await getMic(false);if(!micRes.ok){go('create');return}
+  // Use code + random suffix so ID is always unique even on retry
   const code=mkCode();sessionCode=code;
+  const uid=Math.random().toString(36).slice(2,6);
+  const peerId='mwj'+code+'x'+uid;
   loading('جاري الاتصال...','نتصل بالخادم');
-  try { peer = await initPeerWithFallback('mwj'+code); } catch(e) {
+  try { peer = await initPeerWithFallback(peerId); } catch(e) {
     loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
     setTimeout(()=>go('create'),3000); return;
   }
   // Peer connected successfully - setup session
-  sessionLink=window.location.href.split('?')[0]+'?join='+code;
+  sessionLink=window.location.href.split('?')[0]+'?join='+code+'&pid='+encodeURIComponent(peerId);
   $('st').textContent=topic;$('sm').textContent=dest?`${name} ← ${dest}`:name;
   $('bigcode').textContent=code;$('slink').textContent=sessionLink;
   renderHostList();startTimer(dur);go('session');
@@ -529,6 +577,9 @@ async function joinSession(){
   let code=$('jcode').value.trim();const name=$('gname').value.trim()||'ضيف';
   if(!code||code.length<6){toast('أدخل الكود المكون من 6 أرقام ⚠️');return}
   code=code.replace(/\D/g,'').slice(0,6);myName=name;
+  // Cleanup any previous session first
+  loading('جاري التحضير...','إنهاء الجلسة السابقة...');
+  await fullCleanup();
   loading('جاري التحضير...','نكتشف موقعك');
   myFlag=await detectCountry();
   loading('جاري التحضير...','نطلب إذن الميكروفون');
@@ -538,8 +589,9 @@ async function joinSession(){
     loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
     setTimeout(()=>go('join'),3000); return;
   }
-  // Peer connected - now connect to host
-  const pid='mwj'+code;
+  // Use pid from URL if available (has suffix), otherwise fallback mwj+code
+  const urlPid=new URLSearchParams(location.search).get('pid');
+  const pid=urlPid?decodeURIComponent(urlPid):'mwj'+code;
     hostConn=peer.connect(pid);
     hostConn.on('open',()=>{hostConn.send({type:'hello',name,listen:listenOnly,flag:myFlag});});
     hostConn.on('data',d=>{
@@ -552,10 +604,10 @@ async function joinSession(){
       if(d.type==='mute'){gMuted=d.value;if(stream)stream.getAudioTracks().forEach(t=>t.enabled=!gMuted);$('gmc').textContent=gMuted?'🔇 مكتوم':'🎙️ صوت';$('gmc').classList.toggle('muted',gMuted);toast(gMuted?'المضيف كتم صوتك':'المضيف فتح صوتك');}
       if(d.type==='allowed'){$('waitingPerm').style.display='none';$('gctrls').style.display='flex';playSound('allowed');toast('المضيف أعطاك الكلام 🎙️ تفضل');raised=false;$('rc').textContent='✋ طلب الكلام';$('rc').classList.remove('raise-on');}
       if(d.type==='denied'){toast('رفض الهوست طلبك ❌')}
-      if(d.type==='kick'){toast('تم طردك من الجلسة');setTimeout(()=>leaveSession(),1000)}
+      if(d.type==='kick'){toast('تم طردك من الجلسة');stopAd();setTimeout(async()=>{await fullCleanup();go('home');},1000)}
       if(d.type==='full'){toast('الغرفة ممتلئة، جرب لاحقاً ⚠️');peer.destroy();go('home');}
     });
-    hostConn.on('close',()=>{stopAd();playAd('outro');});
+    hostConn.on('close',()=>{toast('انقطع الاتصال بالمضيف');stopAd();playAd('outro');setTimeout(async()=>{await fullCleanup();},200);});
     hostConn.on('error',()=>{loading('تعذر الاتصال','تأكد من الكود');setTimeout(()=>go('join'),2500)});
     if(!listenOnly){
       const call=peer.call(pid,stream);
@@ -568,6 +620,12 @@ async function joinSession(){
 }
 
 function confirmMode(mode){const name=$('mname').value.trim()||'ضيف';$('modeSelect').style.display='none';listenOnly=mode==='listen';$('jcode').value=pendingCode;$('gname').value=name;setMode(mode);joinSession();}
+
+// ===== SAFE GO HOME (cleanup first) =====
+async function goHome(){
+  await fullCleanup();
+  go('home');
+}
 
 function showGuestScreen(code,name,listen){
   $('gt').textContent='جلسة مباشرة';$('gm').textContent='كود: '+code;
@@ -585,21 +643,22 @@ function rateStar(n){selectedRating=n;const msgs=['😞 سيئة','😐 مقبو
 function submitRating(){if(!selectedRating){toast('اختر تقييماً ⭐');return}toast('شكراً على تقييمك 🙏');$('ratingOverlay').style.display='none';stopAd();playAd('outro');}
 function skipRating(){$('ratingOverlay').style.display='none';stopAd();playAd('outro');}
 function endSession(){
-  clearInterval(timerInt);
+  // Notify all guests first
   Object.values(dataConns).forEach(dc=>{try{dc.send({type:'kick'})}catch(e){}});
-  Object.values(calls).forEach(c=>c.close());
-  if(stream)stream.getTracks().forEach(t=>t.stop());
-  if(peer){try{peer.destroy()}catch{}}
-  peer=null;stream=null;calls={};dataConns={};participants={};raiseQueue=[];pendingPermQueue=[];guestSeqCounter=0;isHost=false;
-  stopAd();playAd('outro');
+  stopAd();
+  playAd('outro');
+  // Cleanup after outro
+  setTimeout(async ()=>{
+    await fullCleanup();
+  }, 200);
 }
 function leaveSession(){
   if(hostConn&&hostConn.open)hostConn.send({type:'leave'});
-  Object.values(calls).forEach(c=>c.close());
-  if(stream)stream.getTracks().forEach(t=>t.stop());
-  if(peer){try{peer.destroy()}catch{}}
-  peer=null;stream=null;
-  stopAd();playAd('outro');
+  stopAd();
+  playAd('outro');
+  setTimeout(async ()=>{
+    await fullCleanup();
+  }, 200);
 }
 </script>
 </body>
