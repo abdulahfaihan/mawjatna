@@ -151,12 +151,12 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <div class="logo">
     <div class="logo-icon"><div class="lw"><span></span><span></span><span></span><span></span><span></span></div></div>
     <div class="logo-name">مو<span>جة</span></div>
-    <div class="logo-tag">v3.5.4 · جلسات صوتية مؤقتة</div>
+    <div class="logo-tag">v3.5.5 · جلسات صوتية مؤقتة</div>
   </div>
   <!-- HOME -->
   <div id="s-home" class="screen active">
     <div class="hero-v2">
-      <div class="hero-badge">v3.5.4 — آخر تحديث</div>
+      <div class="hero-badge">v3.5.5 — آخر تحديث</div>
       <h1 class="hero-h">افتح موجتك<br><span class="hero-accent">وسمّعنا إبداعك</span></h1>
       <p class="hero-sub">جلسة صوتية مؤقتة تنتهي تلقائياً ولا تترك أثر — ابدأ في ثوانٍ</p>
     </div>
@@ -187,7 +187,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
         <div class="review-card"><div class="review-top"><div class="review-av" style="background:#FCE4EC;color:#880E4F">ر</div><div><div class="review-name">ريم الدوسري</div><div class="review-stars">★★★★★</div></div></div><div class="review-text">استخدمناه في الفريق أثناء العمل، الكود يشتغل في ثواني والصوت واضح</div></div>
       </div>
     </div>
-    <div class="home-footer">موجة · v3.5.4 · <span id="live-count">—</span> جلسة نشطة الآن</div>
+    <div class="home-footer">موجة · v3.5.5 · <span id="live-count">—</span> جلسة نشطة الآن</div>
   </div>
   <!-- CREATE -->
   <div id="s-create" class="screen">
@@ -417,38 +417,43 @@ const ICE={iceServers:[
 // This is the KEY FIX: never pass a fixed peer ID to avoid server-error
 // The host gets a random ID from PeerJS, stores it, shares via URL
 function createPeer(peerId){
-  // Try multiple servers in sequence; optional peerId for host registration
-  const SERVERS=[
-    {host:'0.peerjs.com',port:443,path:'/',secure:true},
-    {host:'peerjs.mtpbar.com',port:443,path:'/',secure:true},
-  ];
-  function tryServer(idx,id){
-    return new Promise((resolve,reject)=>{
-      if(idx>=SERVERS.length){reject(new Error('all-servers-failed'));return;}
-      const cfg=SERVERS[idx];
-      const opts={...cfg,debug:0,config:ICE};
-      const p=id?new Peer(id,opts):new Peer(opts);
-      const t=setTimeout(()=>{
+  // Single reliable server with retry logic
+  // peerId: optional — host passes 'mwj'+code, guest passes nothing
+  return new Promise((resolve,reject)=>{
+    let attempt=0;
+    const MAX=3;
+    function attempt_connect(id){
+      if(attempt>=MAX){reject(new Error('connection-failed'));return;}
+      attempt++;
+      const p=id
+        ?new Peer(id,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE})
+        :new Peer(   {host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:ICE});
+      let done=false;
+      const timer=setTimeout(()=>{
+        if(done)return;done=true;
         try{p.destroy();}catch{}
-        tryServer(idx+1,id).then(resolve).catch(reject);
-      },15000);
-      p.on('open',()=>{clearTimeout(t);resolve(p);});
+        attempt_connect(id); // retry same ID
+      },10000);
+      p.on('open',()=>{
+        if(done)return;done=true;
+        clearTimeout(timer);
+        resolve(p);
+      });
       p.on('error',e=>{
-        clearTimeout(t);
+        if(done)return;done=true;
+        clearTimeout(timer);
         try{p.destroy();}catch{}
-        if(e.type==='server-error'||e.type==='socket-error'||e.type==='network'){
-          // Try next server
-          tryServer(idx+1,id).then(resolve).catch(reject);
-        } else if(e.type==='unavailable-id'){
-          // Claimed ID is taken — fall back to random
-          tryServer(idx,null).then(resolve).catch(reject);
+        if(e.type==='unavailable-id'){
+          // ID taken — retry without ID (random)
+          attempt_connect(null);
         } else {
-          reject(e);
+          // Any other error: retry same attempt
+          attempt_connect(id);
         }
       });
-    });
-  }
-  return tryServer(0,peerId||null);
+    }
+    attempt_connect(peerId||null);
+  });
 }
 
 // ===== HOST RENDER =====
@@ -503,7 +508,7 @@ async function createSession(){
   const code=mkCode();sessionCode=code;
   const wantedId='mwj'+code;
   try{peer=await createPeer(wantedId);}catch(e){
-    loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
+    loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+(e.type||e.message||'خطأ غير معروف'));
     setTimeout(()=>go('create'),3000);return;
   }
   // peer.id = wantedId if available, else random UUID (unavailable-id fallback)
@@ -564,7 +569,7 @@ async function joinSession(){
   if(micR.forced)listenOnly=true;
   loading('جاري الاتصال...','نتصل بالخادم');
   try{peer=await createPeer();}catch(e){
-    loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
+    loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+(e.type||e.message||'خطأ غير معروف'));
     setTimeout(()=>go('join'),3000);return;
   }
   // hostId resolution:
