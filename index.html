@@ -151,12 +151,12 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
   <div class="logo">
     <div class="logo-icon"><div class="lw"><span></span><span></span><span></span><span></span><span></span></div></div>
     <div class="logo-name">مو<span>جة</span></div>
-    <div class="logo-tag">v3.5.3 · جلسات صوتية مؤقتة</div>
+    <div class="logo-tag">v3.5.4 · جلسات صوتية مؤقتة</div>
   </div>
   <!-- HOME -->
   <div id="s-home" class="screen active">
     <div class="hero-v2">
-      <div class="hero-badge">v3.5.3 — آخر تحديث</div>
+      <div class="hero-badge">v3.5.4 — آخر تحديث</div>
       <h1 class="hero-h">افتح موجتك<br><span class="hero-accent">وسمّعنا إبداعك</span></h1>
       <p class="hero-sub">جلسة صوتية مؤقتة تنتهي تلقائياً ولا تترك أثر — ابدأ في ثوانٍ</p>
     </div>
@@ -187,7 +187,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:var(--bg);
         <div class="review-card"><div class="review-top"><div class="review-av" style="background:#FCE4EC;color:#880E4F">ر</div><div><div class="review-name">ريم الدوسري</div><div class="review-stars">★★★★★</div></div></div><div class="review-text">استخدمناه في الفريق أثناء العمل، الكود يشتغل في ثواني والصوت واضح</div></div>
       </div>
     </div>
-    <div class="home-footer">موجة · v3.5.3 · <span id="live-count">—</span> جلسة نشطة الآن</div>
+    <div class="home-footer">موجة · v3.5.4 · <span id="live-count">—</span> جلسة نشطة الآن</div>
   </div>
   <!-- CREATE -->
   <div id="s-create" class="screen">
@@ -416,27 +416,39 @@ const ICE={iceServers:[
 // ===== PEERJS — NO fixed ID, let server assign random ID =====
 // This is the KEY FIX: never pass a fixed peer ID to avoid server-error
 // The host gets a random ID from PeerJS, stores it, shares via URL
-function createPeer(){
-  return new Promise((resolve,reject)=>{
-    // Always use random ID assigned by server — avoids server-error completely
-    const p=new Peer({
-      host:'0.peerjs.com',port:443,path:'/',secure:true,
-      debug:0,config:ICE
+function createPeer(peerId){
+  // Try multiple servers in sequence; optional peerId for host registration
+  const SERVERS=[
+    {host:'0.peerjs.com',port:443,path:'/',secure:true},
+    {host:'peerjs.mtpbar.com',port:443,path:'/',secure:true},
+  ];
+  function tryServer(idx,id){
+    return new Promise((resolve,reject)=>{
+      if(idx>=SERVERS.length){reject(new Error('all-servers-failed'));return;}
+      const cfg=SERVERS[idx];
+      const opts={...cfg,debug:0,config:ICE};
+      const p=id?new Peer(id,opts):new Peer(opts);
+      const t=setTimeout(()=>{
+        try{p.destroy();}catch{}
+        tryServer(idx+1,id).then(resolve).catch(reject);
+      },15000);
+      p.on('open',()=>{clearTimeout(t);resolve(p);});
+      p.on('error',e=>{
+        clearTimeout(t);
+        try{p.destroy();}catch{}
+        if(e.type==='server-error'||e.type==='socket-error'||e.type==='network'){
+          // Try next server
+          tryServer(idx+1,id).then(resolve).catch(reject);
+        } else if(e.type==='unavailable-id'){
+          // Claimed ID is taken — fall back to random
+          tryServer(idx,null).then(resolve).catch(reject);
+        } else {
+          reject(e);
+        }
+      });
     });
-    const t=setTimeout(()=>{
-      try{p.destroy();}catch{}
-      reject(new Error('timeout'));
-    },12000);
-    p.on('open',id=>{
-      clearTimeout(t);
-      resolve(p);
-    });
-    p.on('error',e=>{
-      clearTimeout(t);
-      try{p.destroy();}catch{}
-      reject(e);
-    });
-  });
+  }
+  return tryServer(0,peerId||null);
 }
 
 // ===== HOST RENDER =====
@@ -486,14 +498,18 @@ async function createSession(){
   loading('جاري التحضير...','نطلب إذن الميكروفون');
   const micRes=await getMic(false);if(!micRes.ok){go('create');return;}
   loading('جاري الاتصال...','نتصل بالخادم');
-  try{peer=await createPeer();}catch(e){
+  // Generate code FIRST so host can claim 'mwj'+code as peer ID
+  // Guests can then join by code (without needing the link)
+  const code=mkCode();sessionCode=code;
+  const wantedId='mwj'+code;
+  try{peer=await createPeer(wantedId);}catch(e){
     loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
     setTimeout(()=>go('create'),3000);return;
   }
-  // Use PeerJS-assigned random ID — no collision ever
+  // peer.id = wantedId if available, else random UUID (unavailable-id fallback)
   hostPeerId=peer.id;
-  const code=mkCode();sessionCode=code;
-  sessionLink=window.location.href.split('?')[0]+'?j='+code+':'+hostPeerId; // single param — no & for WhatsApp
+  // Link always contains actual peer ID — 100% reliable regardless
+  sessionLink=window.location.href.split('?')[0]+'?j='+code+':'+hostPeerId;
   $('st').textContent=topic;$('sm').textContent=name;
   $('bigcode').textContent=code;$('slink').textContent=sessionLink;
   renderHostList();startTimer(dur);go('session');
@@ -551,9 +567,13 @@ async function joinSession(){
     loading('فشل الاتصال','تأكد من الإنترنت وحاول مجدداً','❌ '+e.type);
     setTimeout(()=>go('join'),3000);return;
   }
-  // FIX: pendingPid already decoded — no extra decodeURIComponent
-  const hostId=pendingPid||''; // already set in window.onload
-  if(!hostId){loading('خطأ','الرابط غير صحيح، اطلب رابطاً جديداً من المضيف','❌ لا يوجد معرّف للجلسة');setTimeout(()=>go('join'),3000);return;}
+  // hostId resolution:
+  // 1. pendingPid from ?j=CODE:PEERID link → exact peer ID (most reliable)
+  // 2. No link → try 'mwj'+code (host claimed this ID when creating session)
+  const hostId=pendingPid||('mwj'+code);
+  // Note: if host got a random UUID (peer ID taken), code entry will get peer-unavailable
+  // → handled by retry logic below, then timeout shows "session not found"
+  console.log('[موجة] Connecting to hostId:', hostId, '| via link:', !!pendingPid);
 
   // Timeout: show error only after 18s (give ICE negotiation time)
   let connected=false;
